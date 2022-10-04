@@ -221,7 +221,7 @@
       "UpstreamPathTemplate": "/ClayService/Tag",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
-    //AssignTagToUser 
+    //Tag/AssignTagToUser 
     {
       "DownstreamPathTemplate": "/api/v1/tag/assigntagtouser",
       "DownstreamScheme": "http",
@@ -233,6 +233,19 @@
       ],
       "UpstreamPathTemplate": "/ClayService/Tag/AssignTagToUser",
       "UpstreamHttpMethod": [ "POST" ]
+    },
+    //EventHistory
+    {
+      "DownstreamPathTemplate": "/api/v1/eventhistory",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": "5001"
+        }
+      ],
+      "UpstreamPathTemplate": "/ClayService/EventHistory",
+      "UpstreamHttpMethod": [ "GET" ]
     }
   ],
   "GlobalConfiguration": {

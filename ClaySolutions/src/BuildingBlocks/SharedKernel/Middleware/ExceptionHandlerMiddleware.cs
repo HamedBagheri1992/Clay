@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SharedKernel.Exceptions;
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -33,13 +34,13 @@ namespace SharedKernel.Middleware
         private Task ConvertException(HttpContext context, Exception exception)
         {
             int httpStatusCode;
-            var result = exception.Message;
+            string result = string.Empty;
 
             switch (exception)
             {
                 case ValidationException validationException:
                     httpStatusCode = (int)HttpStatusCode.BadRequest;
-                    result = JsonConvert.SerializeObject(validationException.ValdationErrors);
+                    result = string.Join(Environment.NewLine, (exception as ValidationException).Errors.Select(x => x.Value[0]));
                     break;
                 case BadRequestException badRequestException:
                     httpStatusCode = (int)HttpStatusCode.BadRequest;
@@ -47,6 +48,7 @@ namespace SharedKernel.Middleware
                     break;
                 case NotFoundException:
                     httpStatusCode = (int)HttpStatusCode.NotFound;
+                    result = exception.Message;
                     break;
                 case ApiException apiException:
                     httpStatusCode = (int)HttpStatusCode.InternalServerError;
@@ -58,17 +60,15 @@ namespace SharedKernel.Middleware
             }
 
 
-            _logger.LogError(result);
+            _logger.LogError(exception, exception.Message);
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = httpStatusCode;
 
-            if (result == string.Empty)
-            {
-                result = JsonConvert.SerializeObject(new { StatusCode = httpStatusCode, error = exception.Message });
-            }
+            if (string.IsNullOrEmpty(result))
+                result = exception.Message;
 
-            return context.Response.WriteAsync(result);
+            return context.Response.WriteAsync(JsonConvert.SerializeObject(new { StatusCode = httpStatusCode, error = result }));
         }
     }
 }

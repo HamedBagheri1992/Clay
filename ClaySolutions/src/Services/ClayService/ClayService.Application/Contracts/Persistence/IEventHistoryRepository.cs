@@ -10,6 +10,6 @@ namespace ClayService.Application.Contracts.Persistence
     public interface IEventHistoryRepository
     {
         Task<bool> BulkInsert(List<EventHistoryCheckoutEvent> eventHistories);
-        Task<PaginatedResult<EventHistory>> GetAsync(GetEventHistoriesQuery request);
+        Task<PaginatedResult<EventHistoryDto>> GetAsync(GetEventHistoriesQuery request);
     }
 }

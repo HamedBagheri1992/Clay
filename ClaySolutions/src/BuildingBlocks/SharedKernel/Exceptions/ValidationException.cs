@@ -1,21 +1,27 @@
 ﻿using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SharedKernel.Exceptions
 {
-    public class ValidationException : ApplicationException
+    public class ValidationException : Exception
     {
-        public List<string> ValdationErrors { get; set; }
-
-        public ValidationException(ValidationResult validationResult)
+        public ValidationException()
+            : base("One or more validation failures have occurred.")
         {
-            ValdationErrors = new List<string>();
-
-            foreach (var validationError in validationResult.Errors)
-            {
-                ValdationErrors.Add(validationError.ErrorMessage);
-            }
+            Errors = new Dictionary<string, string[]>();
         }
+
+        public ValidationException(IEnumerable<ValidationFailure> failures)
+            : this()
+        {
+            Errors = failures
+                .GroupBy(e => e.PropertyName, e => e.ErrorMessage)
+                .ToDictionary(failureGroup => failureGroup.Key, failureGroup => failureGroup.ToArray());
+        }
+
+        public IDictionary<string, string[]> Errors { get; }
     }
+
 }

@@ -43,7 +43,7 @@ namespace SSO.Infrastructure.Repositories
                 throw new NotFoundException($"No Accounts Registered", request.UserName);
 
             if (user.IsActive == false)
-                throw new ApiException($"Account is not active with {request.UserName}.");
+                throw new BadRequestException($"Account is not active with {request.UserName}.");
 
             var token = GenerateJWToken(user, _options);
             var result = new AuthenticateDto { Token = token, RefreshToken = Guid.NewGuid() };

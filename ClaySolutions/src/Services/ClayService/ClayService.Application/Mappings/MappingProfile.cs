@@ -24,6 +24,7 @@ namespace ClayService.Application.Mappings
 
             CreateMap<EventHistory, EventHistoryDto>();
             CreateMap<PaginatedResult<EventHistory>, PaginatedList<EventHistoryDto>>();
+            CreateMap<PaginatedResult<EventHistoryDto>, PaginatedList<EventHistoryDto>>();
 
             CreateMap<UserAddOrUpdateCommand, User>();
         }
