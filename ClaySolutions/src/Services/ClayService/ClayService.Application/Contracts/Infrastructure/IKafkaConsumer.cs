@@ -2,6 +2,7 @@
 {
     public interface IKafkaConsumer
     {
+        bool Init();
         void Start();
         void Stop();
     }

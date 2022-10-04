@@ -32,4 +32,8 @@
     <ProjectReference Include="..\ClayService.Domain\ClayService.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Persistence\Migrations\" />
+  </ItemGroup>
+
 </Project>

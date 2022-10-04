@@ -5,7 +5,7 @@ namespace EventBus.Messages.Events
     public class EventHistoryCheckoutEvent
     {
         public long? UserId { get; set; }
-        public Guid TagCode { get; set; }
+        public string TagCode { get; set; }
         public long OfficeId { get; set; }
         public long DoorId { get; set; }
         public byte SourceType { get; set; }

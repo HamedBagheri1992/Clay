@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -10,17 +11,8 @@ namespace SharedKernel.Extensions
         public static List<string> GetUserClaimRoles(this IIdentity identity)
         {
             var identity1 = identity as ClaimsIdentity;
-            return identity1?.GetUserRoleClaimValue(ClaimTypes.Role);
-        }
-        public static List<string> GetUserRoleClaimValue(this IIdentity identity, string claimType)
-        {
-            var identity1 = identity as ClaimsIdentity;
-            return identity1?.FindAllValue(claimType);
-        }
-        public static List<string> FindAllValue(this ClaimsIdentity identity, string claimType)
-        {
-            return identity?.FindAll(claimType) as List<string>;
-        }
+            return identity1?.Claims?.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+        }       
         public static string FindFirstValue(this ClaimsIdentity identity, string claimType)
         {
             return identity?.FindFirst(claimType)?.Value;

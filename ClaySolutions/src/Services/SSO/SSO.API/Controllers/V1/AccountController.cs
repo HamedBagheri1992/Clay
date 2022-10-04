@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.Common;
 using SSO.Application.Features.Account.Commands.ChangePassword;
 using SSO.Application.Features.Account.Commands.UpdateUserRole;
 using SSO.Application.Features.Account.Queries.Authenticate;
@@ -14,13 +15,13 @@ namespace SSO.API.Controllers.V1
     public class AccountController : ApiControllerBase
     {
         [AllowAnonymous]
-        [HttpPost("[action]")]       
+        [HttpPost("[action]")]
         public async Task<ActionResult<AuthenticateDto>> Login([FromBody] AuthenticateQuery query)
         {
             return Ok(await Mediator.Send(query));
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPut("[action]")]
         public async Task<ActionResult<AuthenticateDto>> ChangePassword([FromBody] ChangePasswordCommand command)
         {
@@ -32,7 +33,7 @@ namespace SSO.API.Controllers.V1
         }
 
         [HttpPut("[action]")]
-        //[Authorize("Admin")]
+        [Authorize(Roles = SystemRoleDefinition.Admin)]
         public async Task<ActionResult<AuthenticateDto>> UpdateUserRole([FromBody] UpdateUserRoleCommand command)
         {
             await Mediator.Send(command);

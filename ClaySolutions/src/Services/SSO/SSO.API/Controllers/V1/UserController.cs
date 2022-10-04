@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SharedKernel.Common;
 using SSO.Application.Features.User.Commands.CreateUser;
 using SSO.Application.Features.User.Commands.DeleteUser;
 using SSO.Application.Features.User.Commands.UpdateUser;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 namespace SSO.API.Controllers.V1
 {
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class UserController : ApiControllerBase
@@ -22,12 +23,14 @@ namespace SSO.API.Controllers.V1
         }
 
         [HttpGet]
+        [Authorize(Roles = $"{SystemRoleDefinition.Admin},{SystemRoleDefinition.Manager}")]
         public async Task<ActionResult> Get([FromQuery] GetUsersQuery query)
         {
             return Ok(await Mediator.Send(query));
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{SystemRoleDefinition.Admin},{SystemRoleDefinition.Manager}")]
         public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
         {
             var userDto = await Mediator.Send(command);
@@ -35,6 +38,7 @@ namespace SSO.API.Controllers.V1
         }
 
         [HttpPut("{Id}")]
+        [Authorize(Roles = $"{SystemRoleDefinition.Admin},{SystemRoleDefinition.Manager}")]
         public async Task<IActionResult> Update([FromRoute] long Id, [FromBody] UpdateUserCommand command)
         {
             if (Id != command.Id)
@@ -47,6 +51,7 @@ namespace SSO.API.Controllers.V1
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{SystemRoleDefinition.Admin},{SystemRoleDefinition.Manager}")]
         public async Task<ActionResult> Delete(int id)
         {
             await Mediator.Send(new DeleteUserCommand(id));

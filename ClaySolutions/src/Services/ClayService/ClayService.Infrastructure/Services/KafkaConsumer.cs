@@ -17,18 +17,35 @@ namespace ClayService.Infrastructure.Services
         private readonly IEventHistoryRepository _eventHistoryRepository;
         private readonly ILogger<KafkaConsumer> _logger;
         private readonly IOptionsMonitor<KafkaSettingsConfigurationModel> _options;
-        private readonly IConsumer<Ignore, string> _consumer;
-        private readonly System.Timers.Timer _timer;
+        private IConsumer<Ignore, string> _consumer;
+        private System.Timers.Timer _timer;
 
         public KafkaConsumer(IEventHistoryRepository eventHistoryRepository, IOptionsMonitor<KafkaSettingsConfigurationModel> options, ILogger<KafkaConsumer> logger)
         {
             _eventHistoryRepository = eventHistoryRepository;
             _options = options;
             _logger = logger;
-            var config = new ConsumerConfig { GroupId = new Guid().ToString(), BootstrapServers = options.CurrentValue.BrokerAddress, EnableAutoCommit = false };
-            _consumer = new ConsumerBuilder<Ignore, string>(config).SetErrorHandler((_, e) => Console.WriteLine($"Error: {e.Reason}")).Build();
-            _timer = new System.Timers.Timer(options.CurrentValue.ConsumeInterval * 1000);
-            _timer.Elapsed += _timer_Elapsed;
+        }
+
+        public bool Init()
+        {
+            try
+            {
+                var config = new ConsumerConfig { GroupId = new Guid().ToString(), BootstrapServers = _options.CurrentValue.BrokerAddress, EnableAutoCommit = false };
+
+                _consumer = new ConsumerBuilder<Ignore, string>(config).SetErrorHandler((_, e) => Console.WriteLine($"Error: {e.Reason}")).Build();
+                _logger.LogInformation("Consumer created");
+
+                _timer = new System.Timers.Timer(_options.CurrentValue.ConsumeInterval * 1000);
+                _timer.Elapsed += _timer_Elapsed;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error on Init");
+                return false;
+            }
         }
 
         public void Start()
@@ -50,6 +67,8 @@ namespace ClayService.Infrastructure.Services
             _timer.Stop();
             try
             {
+                _logger.LogInformation("Timer checking");
+
                 var consumeResults = ReadMessage();
                 if (consumeResults.Any())
                 {
@@ -82,6 +101,8 @@ namespace ClayService.Infrastructure.Services
             {
                 try
                 {
+                    _logger.LogInformation("Consume");
+
                     var consumeResult = _consumer.Consume();
                     if (consumeResult.IsPartitionEOF)
                         break;

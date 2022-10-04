@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System;
 
 namespace ClayService.Application.Features.Tag.Commands.CreateTag
 {
@@ -9,7 +8,7 @@ namespace ClayService.Application.Features.Tag.Commands.CreateTag
         {
             RuleFor(p => p.TagCode)
                 .NotEmpty()
-                .NotEqual(Guid.Empty)
+                .NotNull()
                 .WithMessage("{TagCode} is required.");
         }
     }

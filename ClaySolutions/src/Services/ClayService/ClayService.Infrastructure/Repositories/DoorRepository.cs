@@ -3,6 +3,7 @@ using ClayService.Application.Contracts.Persistence;
 using ClayService.Application.Features.Door.Commands.AssignDoor;
 using ClayService.Application.Features.Door.Commands.CreateDoor;
 using ClayService.Application.Features.Door.Commands.OperationDoor;
+using ClayService.Application.Features.Door.Commands.UpdateDoor;
 using ClayService.Application.Features.Door.Queries.GetDoor;
 using ClayService.Application.Features.Door.Queries.GetDoors;
 using ClayService.Application.Features.Door.Queries.MyDoors;
@@ -75,7 +76,15 @@ namespace ClayService.Infrastructure.Repositories
 
         public async Task<Door> CreateAsync(CreateDoorCommand request)
         {
+            if (await _context.Doors.AnyAsync(d => d.Name == request.Name && d.OfficeId == request.OfficeId) == true)
+                throw new BadRequestException("Door Name is duplicate in an office");
+
             var office = await _context.offices.FindAsync(request.OfficeId);
+            if (office == null)
+                throw new NotFoundException(nameof(office), request.OfficeId);
+
+            if (office.IsDeleted == true)
+                throw new BadRequestException("Office has removed from System");
 
             var door = new Door
             {
@@ -92,9 +101,25 @@ namespace ClayService.Infrastructure.Repositories
             return door;
         }
 
+        public async Task UpdateAsync(UpdateDoorCommand request)
+        {
+            var door = await _context.Doors.FindAsync(request.Id);
+            if (door == null)
+                throw new NotFoundException(nameof(door), request.Id);
+
+            if (await _context.Doors.AnyAsync(d => d.Name == request.Name && d.OfficeId == request.OfficeId && d.Id != request.Id) == true)
+                throw new BadRequestException("Door Name is duplicate in an office");
+
+            door.Name = request.Name;
+            door.OfficeId = request.OfficeId;
+            door.IsActive = request.IsActive;
+
+            await _context.SaveChangesAsync();
+        }
+
         public async Task OperationAsync(OperationDoorCommand request)
         {
-            var currentUser = await _context.Users.Include(u => u.PhysicalTag).Include(u => u.Doors).AsNoTracking().FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var currentUser = await _context.Users.Include(u => u.PhysicalTag).Include(u => u.Doors).ThenInclude(d => d.Office).AsNoTracking().FirstOrDefaultAsync(u => u.Id == request.UserId);
             if (currentUser == null)
                 throw new NotFoundException(nameof(User), request.UserId);
 
@@ -110,6 +135,10 @@ namespace ClayService.Infrastructure.Repositories
             var door = currentUser.Doors.FirstOrDefault(d => d.Id == request.DoorId);
             if (door == null)
                 throw new NotFoundException(nameof(door), request.DoorId);
+
+            if (door.Office.IsDeleted == true)
+                throw new BadRequestException("Office has removed from System");
+
 
             //Send To Door
 
@@ -127,7 +156,7 @@ namespace ClayService.Infrastructure.Repositories
                 CreatedDate = _dateTimeService.Now
             };
 
-            await KafkaProduceMessage(eventHistoryCheckout);
+            KafkaProduceMessage(eventHistoryCheckout);
 
             if (operationResult == false)
             {
@@ -138,27 +167,38 @@ namespace ClayService.Infrastructure.Repositories
 
         public async Task AssignDoorToUserAsync(AssignDoorCommand request)
         {
-            var user = await _context.Users.Include(u => u.Doors).FirstOrDefaultAsync(u => u.Id == request.UserId);
-
-            if (user == null)
-                throw new NotFoundException(nameof(User), request.UserId);
-
             var offices = await _context.Doors.Include(d => d.Office).Where(d => request.DoorIds.Contains(d.Id)).Select(o => o.Office).Distinct().ToListAsync();
             if (offices.Count != 1)
                 throw new BadRequestException("DoorIds must be for a single office");
 
             var office = offices.First();
+
+            if (request.IsAdmin == false)
+                if (_context.Users.Any(u => u.Id == request.CurrentUserId && u.Offices.Any(o => o.Id == office.Id)) == false)
+                    throw new BadRequestException("The Door is not in your Office");
+
+            var user = await _context.Users.Include(u => u.Offices).Include(u => u.Doors).FirstOrDefaultAsync(u => u.Id == request.UserId);
+            if (user == null)
+                throw new NotFoundException(nameof(User), request.UserId);
+
             if (user.Offices.Any(o => o.Id == office.Id) == false)
                 user.Offices.Add(office);
 
             var (deleteDoors, addDoorIds) = ConsistencyUserDoor(user.Doors, request.DoorIds);
+            if (deleteDoors.Count == 0 && addDoorIds.Count == 0)
+                return;
 
-            var addDoors = await _context.Doors.Where(d => addDoorIds.Contains(d.Id)).ToListAsync();
-            if (addDoorIds.Count != addDoors.Count)
-                throw new BadRequestException("Some DoorIds are Invalid.");
+            if (addDoorIds.Count > 0)
+            {
+                var addDoors = await _context.Doors.Where(d => addDoorIds.Contains(d.Id)).ToListAsync();
+                if (addDoorIds.Count != addDoors.Count)
+                    throw new BadRequestException("Some DoorIds are Invalid.");
 
-            user.Doors.AddRange(addDoors);
-            user.Doors.RemoveRange(deleteDoors);
+                user.Doors.AddRange(addDoors);
+            }
+
+            if (deleteDoors.Count > 0)
+                user.Doors.RemoveRange(deleteDoors);
 
             await _context.SaveChangesAsync();
         }
@@ -173,12 +213,12 @@ namespace ClayService.Infrastructure.Repositories
             return (deleteDoors, addDoorIds);
         }
 
-        private async Task KafkaProduceMessage(EventHistoryCheckoutEvent eventHistoryCheckout)
+        private void KafkaProduceMessage(EventHistoryCheckoutEvent eventHistoryCheckout)
         {
             try
             {
                 string message = JsonConvert.SerializeObject(eventHistoryCheckout);
-                await _kafkaProducer.WriteMessageAsync(message);
+                Task.Factory.StartNew(async () => await _kafkaProducer.WriteMessageAsync(message));
             }
             catch (Exception ex)
             {

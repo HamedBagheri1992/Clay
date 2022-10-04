@@ -5,6 +5,6 @@ namespace ClayService.Application.Contracts.Infrastructure
 {
     public interface IDeviceService
     {
-        Task<bool> SendCommand(Guid TagCode);
+        Task<bool> SendCommand(string TagCode);
     }
 }

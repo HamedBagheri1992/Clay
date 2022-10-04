@@ -1,15 +1,18 @@
-﻿using ClayService.Application.Features.Office.Queries.GetOffice;
+﻿using ClayService.Application.Features.Tag.Commands.AssignTag;
 using ClayService.Application.Features.Tag.Commands.CreateTag;
 using ClayService.Application.Features.Tag.Queries.GetTag;
 using ClayService.Application.Features.Tag.Queries.GetTags;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel.Common;
 using System.Threading.Tasks;
 
 namespace ClayService.API.Controllers.V1
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = $"{SystemRoleDefinition.Admin},{SystemRoleDefinition.Manager}")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class TagController : ApiControllerBase
     {
         [HttpGet]
@@ -26,11 +29,20 @@ namespace ClayService.API.Controllers.V1
         }
 
 
+        [Authorize(Roles = SystemRoleDefinition.Admin)]
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateTagCommand command)
+        public async Task<IActionResult> Create([FromBody] CreateTagCommand command)
         {
             var tagDto = await Mediator.Send(command);
             return CreatedAtAction(nameof(Get), new { tagId = tagDto.Id }, tagDto);
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> AssignTagToUser([FromBody] AssignTagCommand command)
+        {
+            await Mediator.Send(command);
+            return NoContent();
         }
     }
 }

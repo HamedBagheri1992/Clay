@@ -20,7 +20,12 @@ public class Worker : IHostedService
     {
         _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 
-        _kafkaConsumer.Start();
+        if (_kafkaConsumer.Init())
+        {
+            _kafkaConsumer.Start();
+        }
+        else
+            _logger.LogInformation("Consumer could not Start...");
 
         return Task.CompletedTask;
     }

@@ -26,8 +26,10 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+    depends_on:       
+      - zookeeper
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
 
   portainer: 
@@ -45,7 +47,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "ConnectionStrings:DefaultConnection=Server=claydatabase;Database=SSODB;User Id=sa;Password=Aa123456"
-      - "BearerTokens:Key=ClaySystemHamedBagheriToken;Issuer=http://localhost:1000/;RefreshTokenExpirationDays=1;AllowMultipleLoginsFromTheSameUser=true;AllowSignoutAllUserActiveClients=false;AccessTokenExpirationMinutes=60"
+      - "BearerTokens:Key=ClaySystemHamedBagheriToken"
+      - "BearerTokens:Issuer=http://localhost:1000/"
+      - "BearerTokens:RefreshTokenExpirationDays=1"
+      - "BearerTokens:Key=AllowMultipleLoginsFromTheSameUser=true"
+      - "BearerTokens:AllowSignoutAllUserActiveClients=false"
+      - "BearerTokens:AccessTokenExpirationMinutes=60"
       - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
     depends_on: 
       - claydatabase
@@ -58,13 +65,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - "ConnectionStrings:DefaultConnection=Server=claydatabase;Database=ClayServiceDB;User Id=sa;Password=Aa123456"
-      - "BearerTokens:Key=ClaySystemHamedBagheriToken;Issuer=http://localhost:1000/;RefreshTokenExpirationDays=1;AllowMultipleLoginsFromTheSameUser=true;AllowSignoutAllUserActiveClients=false;AccessTokenExpirationMinutes=60"
+      - "BearerTokens:Key=ClaySystemHamedBagheriToken"
+      - "BearerTokens:Issuer=http://localhost:1000/"
       - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
-      - "KafkaSettings:BrokerAddress=kafka;Topic=EventHistory;ConsumeInterval=60"
+      - "KafkaSettings:BrokerAddress=kafka"
+      - "KafkaSettings:Topic=eventhistory-topic"
+      - "KafkaSettings:ConsumeInterval=60"
     depends_on: 
       - claydatabase
       - rabbitmq
-      - zookeeper
       - kafka
     ports:
       - "1001:80"
@@ -85,10 +94,11 @@ services:
     environment:
       - DOTNET_ENVIRONMENT=Development
       - "ConnectionStrings:DefaultConnection=Server=claydatabase;Database=ClayServiceDB;User Id=sa;Password=Aa123456"
-      - "KafkaSettings:BrokerAddress=kafka;Topic=EventHistory;ConsumeInterval=60"
+      - "KafkaSettings:BrokerAddress=kafka"
+      - "KafkaSettings:Topic=eventhistory-topic"
+      - "KafkaSettings:ConsumeInterval=60"
     depends_on: 
       - claydatabase
-      - zookeeper
       - kafka
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro

@@ -19,6 +19,7 @@ namespace ClayService.Infrastructure.Persistence
         public DbSet<Office> offices { get; set; }
         public DbSet<Door> Doors { get; set; }
         public DbSet<EventHistory> EventHistories { get; set; }
+        public DbSet<PhysicalTag> PhysicalTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClayService.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ClayServiceDbContext))]
-    [Migration("20221003145539_Init")]
+    [Migration("20221004085907_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -127,12 +127,18 @@ namespace ClayService.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("TagCode")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("TagCode")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("PhysicalTag");
+                    b.HasIndex("TagCode")
+                        .IsUnique()
+                        .HasFilter("[TagCode] IS NOT NULL");
+
+                    b.HasIndex("TagCode", "CreatedDate");
+
+                    b.ToTable("PhysicalTags");
                 });
 
             modelBuilder.Entity("ClayService.Domain.Entities.User", b =>

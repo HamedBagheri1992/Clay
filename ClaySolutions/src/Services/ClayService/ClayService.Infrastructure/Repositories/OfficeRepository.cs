@@ -1,6 +1,8 @@
 ﻿using ClayService.Application.Contracts.Infrastructure;
 using ClayService.Application.Contracts.Persistence;
 using ClayService.Application.Features.Office.Commands.CreateOffice;
+using ClayService.Application.Features.Office.Commands.DeleteOffice;
+using ClayService.Application.Features.Office.Commands.UpdateOffice;
 using ClayService.Application.Features.Office.Queries.GetOffice;
 using ClayService.Application.Features.Office.Queries.GetOffices;
 using ClayService.Application.Features.Office.Queries.MyOffices;
@@ -53,6 +55,9 @@ namespace ClayService.Infrastructure.Repositories
 
         public async Task<Office> CreateAsync(CreateOfficeCommand request)
         {
+            if (await _context.offices.AnyAsync(o => o.Title == request.Title) == true)
+                throw new BadRequestException("Office name is duplicate");
+
             var office = new Office()
             {
                 Title = request.Title,
@@ -64,6 +69,29 @@ namespace ClayService.Infrastructure.Repositories
             await _context.SaveChangesAsync();
 
             return office;
+        }
+
+        public async Task UpdateAsync(UpdateOfficeCommand request)
+        {
+            var office = await _context.offices.FindAsync(request.Id);
+            if (office == null)
+                throw new NotFoundException(nameof(office), request.Id);
+
+            if (await _context.offices.AnyAsync(o => o.Title == request.Title && o.Id != request.Id) == true)
+                throw new BadRequestException("Office name is duplicate");
+
+            office.Title = request.Title;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(DeleteOfficeCommand request)
+        {
+            var office = await _context.offices.FindAsync(request.Id);
+            if (office == null)
+                throw new NotFoundException(nameof(office), request.Id);
+
+            office.IsDeleted = true;
+            await _context.SaveChangesAsync();
         }
     }
 }

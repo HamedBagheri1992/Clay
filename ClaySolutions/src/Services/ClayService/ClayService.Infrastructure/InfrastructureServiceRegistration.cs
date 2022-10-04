@@ -34,6 +34,7 @@ namespace ClayService.Infrastructure
             services.AddScoped<IOfficeRepository, OfficeRepository>();
             services.AddScoped<IDoorRepository, DoorRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ITagRepository, TagRepository>();
 
             services.AddTransient<IDeviceService, DeviceService>();
             services.AddTransient<IDateTimeService, DateTimeService>();

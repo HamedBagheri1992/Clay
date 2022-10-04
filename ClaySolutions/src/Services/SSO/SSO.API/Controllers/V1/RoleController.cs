@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SharedKernel.Common;
 using SSO.Application.Features.Role.Queries.GetRole;
 using SSO.Application.Features.Role.Queries.GetRoles;
 using System.Collections.Generic;
@@ -7,7 +9,7 @@ using System.Threading.Tasks;
 namespace SSO.API.Controllers.V1
 {
     [ApiController]
-    //[Authorize("Admin")]
+    [Authorize(Roles = SystemRoleDefinition.Admin)]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class RoleController : ApiControllerBase

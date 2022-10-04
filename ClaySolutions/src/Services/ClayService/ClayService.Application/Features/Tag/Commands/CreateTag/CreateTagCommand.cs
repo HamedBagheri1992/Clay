@@ -6,6 +6,6 @@ namespace ClayService.Application.Features.Tag.Commands.CreateTag
 {
     public class CreateTagCommand : IRequest<TagDto>
     {
-        public Guid TagCode { get; set; }
+        public string TagCode { get; set; }
     }
 }

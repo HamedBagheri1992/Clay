@@ -1,6 +1,7 @@
 ﻿using ClayService.Application.Features.Door.Commands.AssignDoor;
 using ClayService.Application.Features.Door.Commands.CreateDoor;
 using ClayService.Application.Features.Door.Commands.OperationDoor;
+using ClayService.Application.Features.Door.Commands.UpdateDoor;
 using ClayService.Application.Features.Door.Queries.GetDoor;
 using ClayService.Application.Features.Door.Queries.GetDoors;
 using ClayService.Application.Features.Door.Queries.MyDoors;
@@ -19,5 +20,6 @@ namespace ClayService.Application.Contracts.Persistence
         Task<PaginatedResult<Door>> GetAsync(GetDoorsQuery request);
         Task<List<Door>> GetAsync(MyDoorsQuery request);
         Task OperationAsync(OperationDoorCommand request);
+        Task UpdateAsync(UpdateDoorCommand request);
     }
 }

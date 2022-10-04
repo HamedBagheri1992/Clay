@@ -6,7 +6,7 @@ namespace ClayService.Infrastructure.Services
 {
     public class DeviceService : IDeviceService
     {
-        public async Task<bool> SendCommand(Guid TagCode)
+        public async Task<bool> SendCommand(string TagCode)
         {
             var random = new Random();
             await Task.Delay(200);

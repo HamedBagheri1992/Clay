@@ -44,17 +44,17 @@ namespace ClayService.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PhysicalTag",
+                name: "PhysicalTags",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TagCode = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TagCode = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PhysicalTag", x => x.Id);
+                    table.PrimaryKey("PK_PhysicalTags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -92,9 +92,9 @@ namespace ClayService.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_PhysicalTag_PhysicalTagId",
+                        name: "FK_Users_PhysicalTags_PhysicalTagId",
                         column: x => x.PhysicalTagId,
-                        principalTable: "PhysicalTag",
+                        principalTable: "PhysicalTags",
                         principalColumn: "Id");
                 });
 
@@ -172,6 +172,18 @@ namespace ClayService.Infrastructure.Persistence.Migrations
                 column: "UsersId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PhysicalTags_TagCode",
+                table: "PhysicalTags",
+                column: "TagCode",
+                unique: true,
+                filter: "[TagCode] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PhysicalTags_TagCode_CreatedDate",
+                table: "PhysicalTags",
+                columns: new[] { "TagCode", "CreatedDate" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_PhysicalTagId",
                 table: "Users",
                 column: "PhysicalTagId",
@@ -200,7 +212,7 @@ namespace ClayService.Infrastructure.Persistence.Migrations
                 name: "offices");
 
             migrationBuilder.DropTable(
-                name: "PhysicalTag");
+                name: "PhysicalTags");
         }
     }
 }
