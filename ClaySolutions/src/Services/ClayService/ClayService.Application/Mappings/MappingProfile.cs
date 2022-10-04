@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using ClayService.Application.Features.Door.Queries.GetDoor;
+using ClayService.Application.Features.EventHistory.Queries.GetEventHistories;
 using ClayService.Application.Features.Office.Queries.GetOffice;
 using ClayService.Application.Features.Tag.Queries.GetTag;
 using ClayService.Application.Features.User.Commands.UserAddOrUpdate;
 using ClayService.Domain.Entities;
-using EventBus.Messages.Events;
 using SharedKernel.Common;
-using System.Collections.Generic;
 
 namespace ClayService.Application.Mappings
 {
@@ -23,9 +22,10 @@ namespace ClayService.Application.Mappings
             CreateMap<PhysicalTag, TagDto>();
             CreateMap<PaginatedResult<PhysicalTag>, PaginatedList<TagDto>>();
 
-            CreateMap<UserAddOrUpdateCommand, User>();
+            CreateMap<EventHistory, EventHistoryDto>();
+            CreateMap<PaginatedResult<EventHistory>, PaginatedList<EventHistoryDto>>();
 
-            CreateMap<EventHistoryCheckoutEvent, EventHistory>();
+            CreateMap<UserAddOrUpdateCommand, User>();
         }
     }
 }

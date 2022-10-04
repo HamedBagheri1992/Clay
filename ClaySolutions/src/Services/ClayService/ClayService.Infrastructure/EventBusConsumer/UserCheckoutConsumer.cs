@@ -30,6 +30,7 @@ namespace ClayService.Infrastructure.EventBusConsumer
             }
             else
             {
+                _logger.LogWarning($"UsercheckoutEvent consumed by warning. User did not add to ClayServiceDatabase => {command.UserName}");
                 await Task.CompletedTask;
             }
         }

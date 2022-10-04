@@ -25,7 +25,7 @@ public class Worker : IHostedService
             _kafkaConsumer.Start();
         }
         else
-            _logger.LogInformation("Consumer could not Start...");
+            _logger.LogWarning("Consumer could not Start...");
 
         return Task.CompletedTask;
     }

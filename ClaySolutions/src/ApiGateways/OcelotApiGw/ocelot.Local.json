@@ -1,186 +1,238 @@
 {
   "Routes": [
-    //SSO API
+    //Account/Login
     {
       "DownstreamPathTemplate": "/api/v1/account/login",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1000"
+          "Port": "5000"
         }
       ],
       "UpstreamPathTemplate": "/SSO/Account/Login",
       "UpstreamHttpMethod": [ "POST" ]
     },
+    //Account/ChangePassword
     {
       "DownstreamPathTemplate": "/api/v1/account/changepassword",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1000"
+          "Port": "5000"
         }
       ],
       "UpstreamPathTemplate": "/SSO/Account/ChangePassword",
       "UpstreamHttpMethod": [ "PUT" ]
     },
+    //UpdateUserRole
     {
       "DownstreamPathTemplate": "/api/v1/account/updateuserrole",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1000"
+          "Port": "5000"
         }
       ],
       "UpstreamPathTemplate": "/SSO/Account/UpdateUserRole",
       "UpstreamHttpMethod": [ "PUT" ]
     },
+    //Role/{id}
     {
       "DownstreamPathTemplate": "/api/v1/role/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1000"
+          "Port": "5000"
         }
       ],
       "UpstreamPathTemplate": "/SSO/Role/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     },
+    //Role => Get
     {
       "DownstreamPathTemplate": "/api/v1/role",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1000"
+          "Port": "5000"
         }
       ],
       "UpstreamPathTemplate": "/SSO/Role",
       "UpstreamHttpMethod": [ "GET" ]
     },
-    {
-      "DownstreamPathTemplate": "/api/v1/user/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": "1000"
-        }
-      ],
-      "UpstreamPathTemplate": "/SSO/User/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ]
-    },
+    //User => Create, Get
     {
       "DownstreamPathTemplate": "/api/v1/user",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1000"
+          "Port": "5000"
         }
       ],
       "UpstreamPathTemplate": "/SSO/User",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
-    //ClayService
+    //User/{id} => Update, Delete, Get
+    {
+      "DownstreamPathTemplate": "/api/v1/user/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": "5000"
+        }
+      ],
+      "UpstreamPathTemplate": "/SSO/User/{id}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ]
+    },
+    //Door/{id}
     {
       "DownstreamPathTemplate": "/api/v1/door/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Door/{id}",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET", "PUT" ]
     },
+    //Door => Create, Get
     {
       "DownstreamPathTemplate": "/api/v1/door",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Door",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
+    //Door/MyDoors
     {
       "DownstreamPathTemplate": "/api/v1/door/mydoors",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Door/MyDoors",
       "UpstreamHttpMethod": [ "GET" ]
     },
+    //Operation
     {
       "DownstreamPathTemplate": "/api/v1/door/operation/{doorId}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Door/Operation/{doorId}",
       "UpstreamHttpMethod": [ "POST" ]
     },
+    //Door/AssignDoorToUser
     {
       "DownstreamPathTemplate": "/api/v1/door/assigndoortouser",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Door/AssignDoorToUser",
       "UpstreamHttpMethod": [ "POST" ]
     },
+    //Office/{id}
     {
       "DownstreamPathTemplate": "/api/v1/office/{id}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Office/{id}",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ]
     },
+    //Office
     {
       "DownstreamPathTemplate": "/api/v1/office",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Office",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
+    //Office/MyOffices
     {
-      "DownstreamPathTemplate": "/api/v1/office/MyOffices",
+      "DownstreamPathTemplate": "/api/v1/office/myoffices",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": "1001"
+          "Port": "5001"
         }
       ],
-      "UpstreamPathTemplate": "/ClayService/Office/myoffices",
+      "UpstreamPathTemplate": "/ClayService/Office/MyOffices",
       "UpstreamHttpMethod": [ "GET" ]
+    },
+    //Tag/{id}
+    {
+      "DownstreamPathTemplate": "/api/v1/tag/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": "5001"
+        }
+      ],
+      "UpstreamPathTemplate": "/ClayService/Tag/{id}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    //Tag
+    {
+      "DownstreamPathTemplate": "/api/v1/tag",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": "5001"
+        }
+      ],
+      "UpstreamPathTemplate": "/ClayService/Tag",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    //AssignTagToUser 
+    {
+      "DownstreamPathTemplate": "/api/v1/tag/assigntagtouser",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": "5001"
+        }
+      ],
+      "UpstreamPathTemplate": "/ClayService/Tag/AssignTagToUser",
+      "UpstreamHttpMethod": [ "POST" ]
     }
   ],
   "GlobalConfiguration": {

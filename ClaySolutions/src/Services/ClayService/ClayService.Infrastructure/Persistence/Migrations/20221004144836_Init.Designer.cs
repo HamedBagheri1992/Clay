@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClayService.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ClayServiceDbContext))]
-    [Migration("20221004085907_Init")]
+    [Migration("20221004144836_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,8 +76,8 @@ namespace ClayService.Infrastructure.Persistence.Migrations
                     b.Property<byte>("SourceType")
                         .HasColumnType("tinyint");
 
-                    b.Property<Guid>("TagCode")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("TagCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("UserId")
                         .HasColumnType("bigint");

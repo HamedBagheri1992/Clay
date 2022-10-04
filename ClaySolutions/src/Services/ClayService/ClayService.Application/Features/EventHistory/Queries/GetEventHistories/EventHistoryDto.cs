@@ -1,10 +1,11 @@
 ﻿using ClayService.Domain.Enums;
 using System;
 
-namespace ClayService.Domain.Entities
+namespace ClayService.Application.Features.EventHistory.Queries.GetEventHistories
 {
-    public class EventHistory : EntityBase
+    public class EventHistoryDto
     {
+        public long Id { get; set; }
         public long? UserId { get; set; }
         public string TagCode { get; set; }
         public long OfficeId { get; set; }

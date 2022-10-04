@@ -1,6 +1,6 @@
 {
   "Routes": [
-    //SSO API
+    //Account/Login
     {
       "DownstreamPathTemplate": "/api/v1/account/login",
       "DownstreamScheme": "http",
@@ -13,6 +13,7 @@
       "UpstreamPathTemplate": "/SSO/Account/Login",
       "UpstreamHttpMethod": [ "POST" ]
     },
+    //Account/ChangePassword
     {
       "DownstreamPathTemplate": "/api/v1/account/changepassword",
       "DownstreamScheme": "http",
@@ -25,6 +26,7 @@
       "UpstreamPathTemplate": "/SSO/Account/ChangePassword",
       "UpstreamHttpMethod": [ "PUT" ]
     },
+    //UpdateUserRole
     {
       "DownstreamPathTemplate": "/api/v1/account/updateuserrole",
       "DownstreamScheme": "http",
@@ -37,6 +39,7 @@
       "UpstreamPathTemplate": "/SSO/Account/UpdateUserRole",
       "UpstreamHttpMethod": [ "PUT" ]
     },
+    //Role/{id}
     {
       "DownstreamPathTemplate": "/api/v1/role/{id}",
       "DownstreamScheme": "http",
@@ -49,6 +52,7 @@
       "UpstreamPathTemplate": "/SSO/Role/{id}",
       "UpstreamHttpMethod": [ "GET" ]
     },
+    //Role => Get
     {
       "DownstreamPathTemplate": "/api/v1/role",
       "DownstreamScheme": "http",
@@ -61,18 +65,7 @@
       "UpstreamPathTemplate": "/SSO/Role",
       "UpstreamHttpMethod": [ "GET" ]
     },
-    {
-      "DownstreamPathTemplate": "/api/v1/user/{id}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "sso.api",
-          "Port": "80"
-        }
-      ],
-      "UpstreamPathTemplate": "/SSO/User/{id}",
-      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ]
-    },
+    //User => Create, Get
     {
       "DownstreamPathTemplate": "/api/v1/user",
       "DownstreamScheme": "http",
@@ -85,7 +78,20 @@
       "UpstreamPathTemplate": "/SSO/User",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
-    //ClayService
+    //User/{id} => Update, Delete, Get
+    {
+      "DownstreamPathTemplate": "/api/v1/user/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "sso.api",
+          "Port": "80"
+        }
+      ],
+      "UpstreamPathTemplate": "/SSO/User/{id}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ]
+    },
+    //Door/{id}
     {
       "DownstreamPathTemplate": "/api/v1/door/{id}",
       "DownstreamScheme": "http",
@@ -96,8 +102,9 @@
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Door/{id}",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET", "PUT" ]
     },
+    //Door => Create, Get
     {
       "DownstreamPathTemplate": "/api/v1/door",
       "DownstreamScheme": "http",
@@ -110,6 +117,7 @@
       "UpstreamPathTemplate": "/ClayService/Door",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
+    //Door/MyDoors
     {
       "DownstreamPathTemplate": "/api/v1/door/mydoors",
       "DownstreamScheme": "http",
@@ -122,6 +130,7 @@
       "UpstreamPathTemplate": "/ClayService/Door/MyDoors",
       "UpstreamHttpMethod": [ "GET" ]
     },
+    //Operation
     {
       "DownstreamPathTemplate": "/api/v1/door/operation/{doorId}",
       "DownstreamScheme": "http",
@@ -134,6 +143,7 @@
       "UpstreamPathTemplate": "/ClayService/Door/Operation/{doorId}",
       "UpstreamHttpMethod": [ "POST" ]
     },
+    //Door/AssignDoorToUser
     {
       "DownstreamPathTemplate": "/api/v1/door/assigndoortouser",
       "DownstreamScheme": "http",
@@ -146,6 +156,7 @@
       "UpstreamPathTemplate": "/ClayService/Door/AssignDoorToUser",
       "UpstreamHttpMethod": [ "POST" ]
     },
+    //Office/{id}
     {
       "DownstreamPathTemplate": "/api/v1/office/{id}",
       "DownstreamScheme": "http",
@@ -156,8 +167,9 @@
         }
       ],
       "UpstreamPathTemplate": "/ClayService/Office/{id}",
-      "UpstreamHttpMethod": [ "GET" ]
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ]
     },
+    //Office
     {
       "DownstreamPathTemplate": "/api/v1/office",
       "DownstreamScheme": "http",
@@ -170,8 +182,9 @@
       "UpstreamPathTemplate": "/ClayService/Office",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
+    //Office/MyOffices
     {
-      "DownstreamPathTemplate": "/api/v1/office/MyOffices",
+      "DownstreamPathTemplate": "/api/v1/office/myoffices",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -179,8 +192,47 @@
           "Port": "80"
         }
       ],
-      "UpstreamPathTemplate": "/ClayService/Office/myoffices",
+      "UpstreamPathTemplate": "/ClayService/Office/MyOffices",
       "UpstreamHttpMethod": [ "GET" ]
+    },
+    //Tag/{id}
+    {
+      "DownstreamPathTemplate": "/api/v1/tag/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "clayservice.api",
+          "Port": "80"
+        }
+      ],
+      "UpstreamPathTemplate": "/ClayService/Tag/{id}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    //Tag
+    {
+      "DownstreamPathTemplate": "/api/v1/tag",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "clayservice.api",
+          "Port": "80"
+        }
+      ],
+      "UpstreamPathTemplate": "/ClayService/Tag",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    //AssignTagToUser 
+    {
+      "DownstreamPathTemplate": "/api/v1/tag/assigntagtouser",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "clayservice.api",
+          "Port": "80"
+        }
+      ],
+      "UpstreamPathTemplate": "/ClayService/Tag/AssignTagToUser",
+      "UpstreamHttpMethod": [ "POST" ]
     }
   ],
   "GlobalConfiguration": {

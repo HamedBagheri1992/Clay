@@ -16,7 +16,7 @@ namespace ClayService.Infrastructure.Persistence.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<long>(type: "bigint", nullable: true),
-                    TagCode = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TagCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OfficeId = table.Column<long>(type: "bigint", nullable: false),
                     DoorId = table.Column<long>(type: "bigint", nullable: false),
                     SourceType = table.Column<byte>(type: "tinyint", nullable: false),
