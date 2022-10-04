@@ -1,0 +1,41 @@
+version: '3.4'
+
+services:
+  claydatabase:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+   
+  kafka:
+    image: wurstmeister/kafka
+
+  portainer:
+    image: portainer/portainer-ce
+  
+  clayservice.api:
+    image: ${DOCKER_REGISTRY-}clayserviceapi
+    build:
+      context: .
+      dockerfile: src/Services/ClayService/ClayService.API/Dockerfile
+
+  sso.api:
+    image: ${DOCKER_REGISTRY-}ssoapi
+    build:
+      context: .
+      dockerfile: src/Services/SSO/SSO.API/Dockerfile
+
+  ocelotapigw:
+    image: ${DOCKER_REGISTRY-}ocelotapigw
+    build:
+      context: .
+      dockerfile: src/ApiGateways/OcelotApiGw/Dockerfile
+
+  clayservice.workerservice:
+    image: ${DOCKER_REGISTRY-}clayserviceworkerservice
+    build:
+      context: .
+      dockerfile: src/Services/ClayService/ClayService.WorkerService/Dockerfile

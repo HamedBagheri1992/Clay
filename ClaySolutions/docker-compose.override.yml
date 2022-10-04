@@ -1,0 +1,98 @@
+version: '3.4'
+
+services:
+  claydatabase:
+    container_name: claydatabase
+    environment:
+      SA_PASSWORD: "Aa123456"
+      ACCEPT_EULA: "Y"
+    restart: always
+    ports:
+      - "1433:1433"
+
+  rabbitmq:
+    container_name: rabbitmq
+    restart: always
+    ports:
+      -  "5672:5672"
+      -  "15672:15672"
+
+  zookeeper:    
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  portainer: 
+    container_name: portainer
+    restart: always
+    ports:
+      - "8080:8000"
+      - "9000:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - portainer_data:/data
+
+  sso.api:
+    container_name: sso.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "ConnectionStrings:DefaultConnection=Server=claydatabase;Database=SSODB;User Id=sa;Password=Aa123456"
+      - "BearerTokens:Key=ClaySystemHamedBagheriToken;Issuer=http://localhost:1000/;RefreshTokenExpirationDays=1;AllowMultipleLoginsFromTheSameUser=true;AllowSignoutAllUserActiveClients=false;AccessTokenExpirationMinutes=60"
+      - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
+    depends_on: 
+      - claydatabase
+      - rabbitmq
+    ports:
+      - "1000:80"
+
+  clayservice.api:
+    container_name: clayservice.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "ConnectionStrings:DefaultConnection=Server=claydatabase;Database=ClayServiceDB;User Id=sa;Password=Aa123456"
+      - "BearerTokens:Key=ClaySystemHamedBagheriToken;Issuer=http://localhost:1000/;RefreshTokenExpirationDays=1;AllowMultipleLoginsFromTheSameUser=true;AllowSignoutAllUserActiveClients=false;AccessTokenExpirationMinutes=60"
+      - "EventBusSettings:HostAddress=amqp://guest:guest@rabbitmq:5672"
+      - "KafkaSettings:BrokerAddress=kafka;Topic=EventHistory;ConsumeInterval=60"
+    depends_on: 
+      - claydatabase
+      - rabbitmq
+      - zookeeper
+      - kafka
+    ports:
+      - "1001:80"
+
+  ocelotapigw:
+    container_name: ocelotapigw
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - sso.api
+      - clayservice.api
+    ports:
+      - "1010:80"
+
+
+  clayservice.workerservice:
+    container_name: clayservice.workerservice
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - "ConnectionStrings:DefaultConnection=Server=claydatabase;Database=ClayServiceDB;User Id=sa;Password=Aa123456"
+      - "KafkaSettings:BrokerAddress=kafka;Topic=EventHistory;ConsumeInterval=60"
+    depends_on: 
+      - claydatabase
+      - zookeeper
+      - kafka
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+
+volumes:
+  portainer_data:
