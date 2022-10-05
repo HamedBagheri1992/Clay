@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClayService.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ClayServiceDbContext))]
-    [Migration("20221004144836_Init")]
+    [Migration("20221005084732_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -15,11 +15,11 @@ namespace ClayService.Infrastructure.Persistence
         {
         }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Office> offices { get; set; }
-        public DbSet<Door> Doors { get; set; }
-        public DbSet<EventHistory> EventHistories { get; set; }
-        public DbSet<PhysicalTag> PhysicalTags { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Office> offices { get; set; }
+        public virtual DbSet<Door> Doors { get; set; }
+        public virtual DbSet<EventHistory> EventHistories { get; set; }
+        public virtual DbSet<PhysicalTag> PhysicalTags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

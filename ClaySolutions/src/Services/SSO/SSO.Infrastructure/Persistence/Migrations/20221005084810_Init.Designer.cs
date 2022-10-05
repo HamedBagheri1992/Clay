@@ -12,7 +12,7 @@ using SSO.Infrastructure.Persistence;
 namespace SSO.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(SSODbContext))]
-    [Migration("20221002090206_Init")]
+    [Migration("20221005084810_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
