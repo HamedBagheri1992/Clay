@@ -42,6 +42,9 @@ namespace SSO.Infrastructure.Repositories
             if (user == null)
                 throw new NotFoundException($"No Accounts Registered", request.UserName);
 
+            if(user.IsDeleted ==true)
+                throw new BadRequestException($"Account is Deleted with {request.UserName}.");
+
             if (user.IsActive == false)
                 throw new BadRequestException($"Account is not active with {request.UserName}.");
 

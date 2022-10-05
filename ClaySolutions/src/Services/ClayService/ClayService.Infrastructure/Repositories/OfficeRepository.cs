@@ -31,9 +31,9 @@ namespace ClayService.Infrastructure.Repositories
 
         public async Task<Office> GetAsync(GetOfficeQuery request)
         {
-            var office = await _context.offices.AsNoTracking().FirstOrDefaultAsync(d => d.Id == request.OfficeId);
+            var office = await _context.offices.AsNoTracking().FirstOrDefaultAsync(d => d.Id == request.Id);
             if (office == null)
-                throw new NotFoundException(nameof(office), request.OfficeId);
+                throw new NotFoundException(nameof(office), request.Id);
 
             return office;
         }

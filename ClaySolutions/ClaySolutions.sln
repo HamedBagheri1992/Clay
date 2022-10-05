@@ -39,7 +39,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventBus.Messages", "src\Bu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedKernel", "src\BuildingBlocks\SharedKernel\SharedKernel.csproj", "{574FED5C-7862-4B45-8B6D-0553C344AC13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClayService.WorkerService", "src\Services\ClayService\ClayService.WorkerService\ClayService.WorkerService.csproj", "{17C74B1E-F587-4719-A537-7902F62FCE8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClayService.WorkerService", "src\Services\ClayService\ClayService.WorkerService\ClayService.WorkerService.csproj", "{17C74B1E-F587-4719-A537-7902F62FCE8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9720360E-6B8F-402E-BB54-05D062F1FC5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -23,7 +23,7 @@ namespace ClayService.API.Controllers.V1
 
 
         [HttpGet("{Id}")]
-        public async Task<ActionResult<TagDto>> Get([FromQuery] GetTagQuery query)
+        public async Task<ActionResult<TagDto>> Get([FromRoute] GetTagQuery query)
         {
             return Ok(await Mediator.Send(query));
         }
