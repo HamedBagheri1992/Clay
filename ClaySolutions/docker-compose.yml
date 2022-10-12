@@ -4,6 +4,9 @@ services:
   claydatabase:
     image: mcr.microsoft.com/mssql/server:2017-latest
 
+  tagdb:
+    image: redis:alpine
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
 

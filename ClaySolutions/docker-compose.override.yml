@@ -10,6 +10,12 @@ services:
     ports:
       - "1433:1433"
 
+  tagdb: 
+    container_name: tagdb
+    restart: always
+    ports:
+      - "6379:6379"
+
   rabbitmq:
     container_name: rabbitmq
     restart: always
@@ -75,10 +81,12 @@ services:
       - "KafkaSettings:BrokerAddress=kafka"
       - "KafkaSettings:Topic=eventhistory-topic"
       - "KafkaSettings:ConsumeInterval=60"
+      - "CacheSettings:ConnectionString=tagdb:6379"
     depends_on: 
       - claydatabase
       - rabbitmq
       - kafka
+      - tagdb
     ports:
       - "1001:80"
 
@@ -100,10 +108,12 @@ services:
       - "ConnectionStrings:DefaultConnection=Server=claydatabase;Database=ClayServiceDB;User Id=sa;Password=Aa123456"
       - "KafkaSettings:BrokerAddress=kafka"
       - "KafkaSettings:Topic=eventhistory-topic"
-      - "KafkaSettings:ConsumeInterval=60"
+      - "KafkaSettings:ConsumeInterval=10"
+      - "CacheSettings:ConnectionString=tagdb:6379"
     depends_on: 
       - claydatabase
       - kafka
+      - tagdb
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
 

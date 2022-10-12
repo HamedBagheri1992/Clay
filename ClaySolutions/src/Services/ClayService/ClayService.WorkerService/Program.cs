@@ -19,9 +19,15 @@ builder.Services.AddDbContext<ClayServiceDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 }, ServiceLifetime.Singleton);
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetValue<string>("CacheSettings:ConnectionString");
+});
+
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddSingleton<IKafkaConsumer, KafkaConsumer>();
 builder.Services.AddSingleton<IEventHistoryRepository, EventHistoryRepository>();
+builder.Services.AddSingleton<ICacheService, CacheService>();
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 

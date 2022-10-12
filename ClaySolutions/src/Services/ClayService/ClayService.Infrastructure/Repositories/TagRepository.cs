@@ -7,10 +7,13 @@ using ClayService.Application.Features.Tag.Queries.GetTags;
 using ClayService.Application.Features.Tag.Queries.MyTag;
 using ClayService.Domain.Entities;
 using ClayService.Infrastructure.Persistence;
+using EventBus.Messages.Events;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SharedKernel.Common;
 using SharedKernel.Exceptions;
 using SharedKernel.Extensions;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,11 +23,13 @@ namespace ClayService.Infrastructure.Repositories
     {
         private readonly ClayServiceDbContext _context;
         private readonly IDateTimeService _dateTimeService;
+        private readonly ICacheService _cacheService;
 
-        public TagRepository(ClayServiceDbContext context, IDateTimeService dateTimeService)
+        public TagRepository(ClayServiceDbContext context, IDateTimeService dateTimeService, ICacheService cacheService)
         {
             _context = context;
             _dateTimeService = dateTimeService;
+            _cacheService = cacheService;
         }
 
         public async Task<PhysicalTag> GetAsync(GetTagQuery request)
@@ -78,21 +83,42 @@ namespace ClayService.Infrastructure.Repositories
 
         public async Task AssignTagToUserAsync(AssignTagCommand request)
         {
-            var user = await _context.Users.FindAsync(request.UserId);
-            if (user == null)
-                throw new BadRequestException("UserId is Invalid");
+            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var user = await _context.Users.FindAsync(request.UserId);
+                    if (user == null)
+                        throw new BadRequestException("UserId is Invalid");
 
-            var tag = await _context.PhysicalTags.FindAsync(request.UserId);
-            if (tag == null)
-                throw new BadRequestException("UserId is Invalid");
+                    var tag = await _context.PhysicalTags.FindAsync(request.UserId);
+                    if (tag == null)
+                        throw new BadRequestException("UserId is Invalid");
 
-            if (request.RemoveRequest == true)
-                user.PhysicalTagId = null;
+                    if (request.RemoveRequest == true)
+                        user.PhysicalTagId = null;
+                    else
+                        user.PhysicalTagId = tag.Id;
 
-            else
-                user.PhysicalTagId = tag.Id;
+                    await _context.SaveChangesAsync();
 
-            await _context.SaveChangesAsync();
+                    if (request.RemoveRequest == true)
+                        await _cacheService.DeleteTagAsync(tag.TagCode);
+                    else
+                    {
+                        var result = await _cacheService.AddOrUpdateTagAsync(tag.TagCode, user.Id);
+                        if (result.HasValue == false)
+                            throw new ApiException("Error on Cache server...");
+                    }
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new ApiException(ex.Message);
+                }
+            }
         }
     }
 }

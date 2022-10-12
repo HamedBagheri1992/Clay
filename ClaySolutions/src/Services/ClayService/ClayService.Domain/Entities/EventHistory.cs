@@ -5,7 +5,7 @@ namespace ClayService.Domain.Entities
 {
     public class EventHistory : EntityBase
     {
-        public long? UserId { get; set; }
+        public long UserId { get; set; }
         public string TagCode { get; set; }
         public long OfficeId { get; set; }
         public long DoorId { get; set; }

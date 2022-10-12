@@ -41,6 +41,7 @@ namespace ClayService.Infrastructure
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddTransient<IEncryptionService, EncryptionService>();
             services.AddSingleton<IKafkaProducer, KafkaProducer>();
+            services.AddScoped<ICacheService, CacheService>();
 
             ConfigureAuthentication(services, configuration);
             ConfigureSwaggerGen(services);
@@ -58,6 +59,11 @@ namespace ClayService.Infrastructure
                 });
             });
             services.AddMassTransitHostedService();
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration.GetValue<string>("CacheSettings:ConnectionString");
+            });
 
             return services;
         }

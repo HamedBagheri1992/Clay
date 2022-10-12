@@ -39,7 +39,7 @@ namespace ClayService.Infrastructure.Services
         {
             try
             {
-                var config = new ConsumerConfig { GroupId = new Guid().ToString(), BootstrapServers = _options.CurrentValue.BrokerAddress, EnableAutoCommit = false };
+                var config = new ConsumerConfig { GroupId = $"group-{_options.CurrentValue.Topic}", BootstrapServers = _options.CurrentValue.BrokerAddress, EnableAutoCommit = false };
 
                 _consumer = new ConsumerBuilder<Null, string>(config).SetErrorHandler((_, e) => Console.WriteLine($"Error: {e.Reason}")).Build();
                 _logger.LogInformation("Consumer created");
