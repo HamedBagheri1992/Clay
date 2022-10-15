@@ -82,6 +82,7 @@ services:
       - "KafkaSettings:Topic=eventhistory-topic"
       - "KafkaSettings:ConsumeInterval=60"
       - "CacheSettings:ConnectionString=tagdb:6379"
+      - "CacheSettings:InitData=true"
     depends_on: 
       - claydatabase
       - rabbitmq
@@ -110,6 +111,7 @@ services:
       - "KafkaSettings:Topic=eventhistory-topic"
       - "KafkaSettings:ConsumeInterval=10"
       - "CacheSettings:ConnectionString=tagdb:6379"
+      - "CacheSettings:InitData=false"
     depends_on: 
       - claydatabase
       - kafka

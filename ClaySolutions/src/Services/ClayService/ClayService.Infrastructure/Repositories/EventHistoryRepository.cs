@@ -88,7 +88,7 @@ namespace ClayService.Infrastructure.Repositories
         {
             return eventHistories.Select(item => new EventHistory
             {
-                UserId = item.UserId.HasValue == true ? item.UserId.Value : cacheService.GetUserId(item.TagCode),
+                UserId = cacheService.GetUserId(item.TagCode),
                 TagCode = item.TagCode,
                 SourceType = (SourceType)item.SourceType,
                 OfficeId = item.OfficeId,

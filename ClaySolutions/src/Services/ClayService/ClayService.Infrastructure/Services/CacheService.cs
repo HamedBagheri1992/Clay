@@ -1,46 +1,114 @@
-﻿using ClayService.Application.Contracts.Infrastructure;
+﻿using ClayService.Application.Common.Settings;
+using ClayService.Application.Contracts.Infrastructure;
+using ClayService.Domain.Entities;
+using ClayService.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SharedKernel.Common;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ClayService.Infrastructure.Services
 {
     public class CacheService : ICacheService
     {
-
+        private readonly ClayServiceDbContext _context;
         private readonly IDistributedCache _redisCache;
+        private readonly IOptionsMonitor<CacheSettingsConfigurationModel> _options;
+        private readonly ILogger<CacheService> _logger;
 
-        public CacheService(IDistributedCache redisCache)
+        public CacheService(IServiceProvider provider, IDistributedCache redisCache, IOptionsMonitor<CacheSettingsConfigurationModel> options, ILogger<CacheService> logger)
         {
+            _context = provider.CreateScope().ServiceProvider.GetRequiredService<ClayServiceDbContext>();
             _redisCache = redisCache;
+            _options = options;
+            _logger = logger;
         }
 
-        public async Task<long> GetUserIdAsync(string tagCode)
+        public async Task InitAsync()
         {
-            var value = await _redisCache.GetStringAsync(tagCode);
-            if (long.TryParse(value, out long userId) == false)
-                return 0;
+            if (_options.CurrentValue.InitData)
+            {
+                _logger.LogInformation($"InitData has started to TagDb");
 
-            return userId;
+                var tagData = await _context.Users.Include(u => u.PhysicalTag).AsNoTracking().Where(u => u.PhysicalTagId.HasValue == true)
+                    .Select(u => new KeyValueModel<string, long> { Key = u.PhysicalTag.TagCode, Value = u.Id }).ToListAsync();
+
+                foreach (KeyValueModel<string, long> item in tagData)
+                {
+                    AddOrUpdateTag(item.Key, item.Value);
+                }
+            }
         }
 
         public long GetUserId(string tagCode)
         {
-            var value = _redisCache.GetString(tagCode);
-            if (long.TryParse(value, out long userId) == false)
-                return 0;
+            var redisResult = GetUserIdRedis(tagCode);
+            if (redisResult != null)
+            {
+                _logger.LogInformation($"Get UserId From redis => {redisResult.Value} / {tagCode}");
+                return redisResult.Value;
+            }
 
-            return userId;
+            var contextResult = GetUserIdContext(tagCode);
+            if (contextResult != null)
+            {
+                _logger.LogInformation($"Get UserId From Database => {contextResult.Value} / {tagCode}");
+
+                AddOrUpdateTag(tagCode, redisResult.Value);
+                return contextResult.Value;
+            }
+
+            _logger.LogWarning($"There is no UserId for tagCode => {tagCode}");
+            return -1;
         }
 
-        public async Task<long?> AddOrUpdateTagAsync(string tagCode, long userId)
+        public bool AddOrUpdateTag(string tagCode, long userId)
         {
-            await _redisCache.SetStringAsync(tagCode, userId.ToString());
-            return await GetUserIdAsync(tagCode);
+            try
+            {
+                _redisCache.SetString(tagCode, userId.ToString());
+                _logger.LogInformation($"UserId added to TagDb => {userId} / {tagCode}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error on set in Redis", ex);
+                return false;
+            }
         }
 
-        public async Task DeleteTagAsync(string tagCode)
+        public void DeleteTag(string tagCode)
         {
-            await _redisCache.RemoveAsync(tagCode);
+            _redisCache.Remove(tagCode);
+            _logger.LogInformation($"TagCode deleted from TagDb => {tagCode}");
         }
+
+
+        #region Privates
+
+        private long? GetUserIdRedis(string tagCode)
+        {
+            var userId = _redisCache.GetString(tagCode);
+            if (long.TryParse(userId, out long id))
+                return id;
+
+            return null;
+        }
+
+        private long? GetUserIdContext(string tagCode)
+        {
+            var user = _context.Users.Include(u => u.PhysicalTag).AsNoTracking().FirstOrDefault(u => u.PhysicalTag.TagCode == tagCode);
+            if (user != null)
+                return user.Id;
+
+            return null;
+        }
+
+        #endregion
     }
 }

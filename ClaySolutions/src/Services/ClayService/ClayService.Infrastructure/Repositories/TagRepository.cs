@@ -103,11 +103,11 @@ namespace ClayService.Infrastructure.Repositories
                     await _context.SaveChangesAsync();
 
                     if (request.RemoveRequest == true)
-                        await _cacheService.DeleteTagAsync(tag.TagCode);
+                        _cacheService.DeleteTag(tag.TagCode);
                     else
                     {
-                        var result = await _cacheService.AddOrUpdateTagAsync(tag.TagCode, user.Id);
-                        if (result.HasValue == false)
+                        var result = _cacheService.AddOrUpdateTag(tag.TagCode, user.Id);
+                        if (result == false)
                             throw new ApiException("Error on Cache server...");
                     }
 

@@ -2,6 +2,7 @@
 using ClayService.Application.Contracts.Infrastructure;
 using ClayService.Application.Contracts.Persistence;
 using ClayService.Infrastructure.EventBusConsumer;
+using ClayService.Infrastructure.HostedServices;
 using ClayService.Infrastructure.Persistence;
 using ClayService.Infrastructure.Repositories;
 using ClayService.Infrastructure.Services;
@@ -23,6 +24,7 @@ namespace ClayService.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<KafkaSettingsConfigurationModel>(configuration.GetSection(KafkaSettingsConfigurationModel.NAME));
+            services.Configure<CacheSettingsConfigurationModel>(configuration.GetSection(CacheSettingsConfigurationModel.NAME));
 
             services.AddDbContext<ClayServiceDbContext>(options =>
             {
@@ -41,7 +43,10 @@ namespace ClayService.Infrastructure
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddTransient<IEncryptionService, EncryptionService>();
             services.AddSingleton<IKafkaProducer, KafkaProducer>();
-            services.AddScoped<ICacheService, CacheService>();
+            services.AddSingleton<ICacheService, CacheService>();
+
+            //Filling Redis
+            services.AddHostedService<CacheServiceInitializer>();
 
             ConfigureAuthentication(services, configuration);
             ConfigureSwaggerGen(services);

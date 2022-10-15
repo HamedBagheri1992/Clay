@@ -48,6 +48,7 @@ namespace ClayService.Infrastructure.Services
                 _timer.AutoReset = true;
                 _timer.Elapsed += _timer_Elapsed;
 
+                _logger.LogInformation("Consumer has Initialized");
                 return true;
             }
             catch (Exception ex)
@@ -86,6 +87,7 @@ namespace ClayService.Infrastructure.Services
                     if (eventHistoryMessage != null)
                     {
                         messagesQueue.Enqueue(eventHistoryMessage);
+                        _logger.LogInformation("Message added to local queue");
                     }
                     else
                         _logger.LogWarning("EventHistoryMessage has null value");
@@ -99,7 +101,7 @@ namespace ClayService.Infrastructure.Services
 
         public ConsumeResult<Null, string> GetFromKafka()
         {
-            _logger.LogInformation("Consume");
+            _logger.LogInformation("Ready to Consume");
 
             var consumeResult = _consumer.Consume(_cancelToken);
 
@@ -111,25 +113,29 @@ namespace ClayService.Infrastructure.Services
         private async void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             _timer.Enabled = false;
+            _logger.LogInformation("Timer checking started");
             try
             {
-                _logger.LogInformation("Timer checking");
                 var messageCount = messagesQueue.Count;
+                _logger.LogInformation($"Message count on local queue is {messageCount}");
 
-                var consumeResults = DequeueMessages(messageCount);
-                if (consumeResults.Any())
+                if (messageCount > 0)
                 {
-                    var histories = consumeResults.Select(c => JsonConvert.DeserializeObject<EventHistoryCheckoutEvent>(c.Message.Value)).ToList();
-                    var result = await _eventHistoryRepository.BulkInsert(histories);
-                    if (result == true)
+                    var consumeResults = DequeueMessages(messageCount);
+                    if (consumeResults.Any())
                     {
-                        foreach (var consumeResult in consumeResults)
+                        var histories = consumeResults.Select(c => JsonConvert.DeserializeObject<EventHistoryCheckoutEvent>(c.Message.Value)).ToList();
+                        var result = await _eventHistoryRepository.BulkInsert(histories);
+                        if (result == true)
                         {
-                            _consumer.Commit(consumeResult);
+                            foreach (var consumeResult in consumeResults)
+                            {
+                                _consumer.Commit(consumeResult);
+                            }
                         }
+                        else
+                            _logger.LogWarning($"Data did not save on Db {consumeResults.Count}");
                     }
-                    else
-                        _logger.LogWarning($"Data did not save on Db {consumeResults.Count}");
                 }
             }
             catch (Exception ex)
@@ -137,6 +143,7 @@ namespace ClayService.Infrastructure.Services
                 _logger.LogError(ex, "Timer_Elapsed has Error");
             }
 
+            _logger.LogInformation("Timer checking stopped");
             _timer.Enabled = true;
         }
 
