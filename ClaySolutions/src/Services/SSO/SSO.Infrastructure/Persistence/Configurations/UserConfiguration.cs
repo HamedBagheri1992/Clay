@@ -15,6 +15,7 @@ namespace SSO.Infrastructure.Persistence.Configurations
             builder.Property(u => u.IsActive).IsRequired();
             builder.Property(u => u.CreatedDate).IsRequired();
             builder.HasIndex(u => new { u.UserName, u.Password }).IsUnique();
+            builder.HasQueryFilter(u => u.IsDeleted == false);
         }
     }
 }

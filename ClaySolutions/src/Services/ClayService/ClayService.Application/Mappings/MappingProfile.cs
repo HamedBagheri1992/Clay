@@ -13,19 +13,12 @@ namespace ClayService.Application.Mappings
     {
         public MappingProfile()
         {
+            CreateMap(typeof(PaginatedResult<>), typeof(PaginatedList<>));
+
             CreateMap<Office, OfficeDto>();
-            CreateMap<PaginatedResult<Office>, PaginatedList<OfficeDto>>();
-
             CreateMap<Door, DoorDto>();
-            CreateMap<PaginatedResult<Door>, PaginatedList<DoorDto>>();
-
             CreateMap<PhysicalTag, TagDto>();
-            CreateMap<PaginatedResult<PhysicalTag>, PaginatedList<TagDto>>();
-
             CreateMap<EventHistory, EventHistoryDto>();
-            CreateMap<PaginatedResult<EventHistory>, PaginatedList<EventHistoryDto>>();
-            CreateMap<PaginatedResult<EventHistoryDto>, PaginatedList<EventHistoryDto>>();
-
             CreateMap<UserAddOrUpdateCommand, User>();
         }
     }

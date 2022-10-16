@@ -4,6 +4,8 @@ using SharedKernel.Common;
 using SSO.Application.Features.Account.Commands.ChangePassword;
 using SSO.Application.Features.Account.Commands.UpdateUserRole;
 using SSO.Application.Features.Account.Queries.Authenticate;
+using SSO.Application.Features.Account.Queries.LogoutUser;
+using SSO.Application.Features.Account.Queries.RefreshToken;
 using System.Threading.Tasks;
 
 namespace SSO.API.Controllers.V1
@@ -38,6 +40,23 @@ namespace SSO.API.Controllers.V1
         {
             await Mediator.Send(command);
             return NoContent();
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Logout([FromBody] LogoutUserQuery query)
+        {
+            if (CurrentUser.Id != query.UserId)
+                return BadRequest();
+
+            await Mediator.Send(query);
+            return NoContent();
+        }
+
+        [HttpPost("[action]")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenQuery query)
+        {
+            return Ok(await Mediator.Send(query));
         }
     }
 }

@@ -26,6 +26,32 @@
       "UpstreamPathTemplate": "/SSO/Account/ChangePassword",
       "UpstreamHttpMethod": [ "PUT" ]
     },
+    //Account/Logout
+    {
+      "DownstreamPathTemplate": "/api/v1/account/logout",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "sso.api",
+          "Port": "80"
+        }
+      ],
+      "UpstreamPathTemplate": "/SSO/Account/Logout",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    //Account/RefreshToken
+    {
+      "DownstreamPathTemplate": "/api/v1/account/refreshtoken",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "sso.api",
+          "Port": "80"
+        }
+      ],
+      "UpstreamPathTemplate": "/SSO/Account/RefreshToken",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
     //UpdateUserRole
     {
       "DownstreamPathTemplate": "/api/v1/account/updateuserrole",

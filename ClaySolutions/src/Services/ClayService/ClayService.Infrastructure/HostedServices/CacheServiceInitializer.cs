@@ -15,7 +15,7 @@ namespace ClayService.Infrastructure.HostedServices
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
-        {
+        {           
             await _cacheService.InitAsync();
         }
 

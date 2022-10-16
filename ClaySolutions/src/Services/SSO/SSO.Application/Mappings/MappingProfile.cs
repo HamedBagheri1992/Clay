@@ -10,9 +10,8 @@ namespace SSO.Application.Mappings
     {
         public MappingProfile()
         {
+            CreateMap(typeof(PaginatedResult<>), typeof(PaginatedList<>));
             CreateMap<User, UserDto>().ReverseMap();
-            CreateMap<PaginatedResult<User>, PaginatedList<UserDto>>();
-
             CreateMap<Role, RoleDto>();
         }
     }

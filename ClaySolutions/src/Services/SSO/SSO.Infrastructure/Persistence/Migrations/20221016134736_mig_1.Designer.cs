@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SSO.Infrastructure.Persistence;
 
@@ -11,9 +12,10 @@ using SSO.Infrastructure.Persistence;
 namespace SSO.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(SSODbContext))]
-    partial class SSODbContextModelSnapshot : ModelSnapshot
+    [Migration("20221016134736_mig_1")]
+    partial class mig_1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +36,7 @@ namespace SSO.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("RoleUser", (string)null);
+                    b.ToTable("RoleUser");
                 });
 
             modelBuilder.Entity("SSO.Domain.Entities.RefreshToken", b =>
@@ -63,7 +65,7 @@ namespace SSO.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("SSO.Domain.Entities.Role", b =>
@@ -82,7 +84,7 @@ namespace SSO.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("SSO.Domain.Entities.User", b =>
@@ -128,7 +130,7 @@ namespace SSO.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserName", "Password")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("RoleUser", b =>

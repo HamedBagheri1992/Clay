@@ -1,6 +1,5 @@
 ﻿using ClayService.Application.Common.Settings;
 using ClayService.Application.Contracts.Infrastructure;
-using ClayService.Domain.Entities;
 using ClayService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -35,12 +34,31 @@ namespace ClayService.Infrastructure.Services
             {
                 _logger.LogInformation($"InitData has started to TagDb");
 
-                var tagData = await _context.Users.Include(u => u.PhysicalTag).AsNoTracking().Where(u => u.PhysicalTagId.HasValue == true)
-                    .Select(u => new KeyValueModel<string, long> { Key = u.PhysicalTag.TagCode, Value = u.Id }).ToListAsync();
-
-                foreach (KeyValueModel<string, long> item in tagData)
+                int retry = 0;
+                while (retry < 3)
                 {
-                    AddOrUpdateTag(item.Key, item.Value);
+                    try
+                    {
+                        await Task.Delay(2000);
+                        var tagData = await _context.Users.Include(u => u.PhysicalTag).AsNoTracking().Where(u => u.PhysicalTagId.HasValue == true)
+                       .Select(u => new KeyValueModel<string, long> { Key = u.PhysicalTag.TagCode, Value = u.Id }).ToListAsync();
+
+                        foreach (KeyValueModel<string, long> item in tagData)
+                        {
+                            AddOrUpdateTag(item.Key, item.Value);
+                        }
+                        break;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        retry++;
+                        continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Error on Init of CacheService", ex);
+                        break;
+                    }
                 }
             }
         }

@@ -14,5 +14,6 @@ namespace SSO.Domain.Entities
         public DateTime CreatedDate { get; set; }
 
         public virtual IList<Role> Roles { get; set; } = new List<Role>();
+        public virtual IList<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }
