@@ -7,7 +7,6 @@ using ClayService.Application.Features.Tag.Queries.GetTags;
 using ClayService.Application.Features.Tag.Queries.MyTag;
 using ClayService.Domain.Entities;
 using ClayService.Infrastructure.Persistence;
-using EventBus.Messages.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using SharedKernel.Common;

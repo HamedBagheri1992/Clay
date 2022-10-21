@@ -5,6 +5,6 @@ namespace ClayService.Application.Features.Door.Commands.AssignDoor
     public class AssignDoorToUserDto
     {
         public long UserId { get; set; }
-        public List<long> DoorIds { get; set; }
+        public long DoorId { get; set; }
     }
 }

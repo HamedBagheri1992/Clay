@@ -21,7 +21,7 @@ namespace ClayService.Application.Features.Door.Queries.GetDoors
 
         public async Task<PaginatedList<DoorDto>> Handle(GetDoorsQuery request, CancellationToken cancellationToken)
         {
-            var doors = await _doorRepository.GetAsync(request);
+            var doors = await _doorRepository.GetAsync(request.Name, request.OfficeId, request.IsActive, request.PageNumber, request.PageSize);
             return _mapper.Map<PaginatedList<DoorDto>>(doors);
         }
     }

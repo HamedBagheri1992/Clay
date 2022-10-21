@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClayService.Application.Features.Door.Commands.UpdateDoor;
 using ClayService.Application.Features.Door.Queries.GetDoor;
 using ClayService.Application.Features.EventHistory.Queries.GetEventHistories;
 using ClayService.Application.Features.Office.Queries.GetOffice;
@@ -16,7 +17,10 @@ namespace ClayService.Application.Mappings
             CreateMap(typeof(PaginatedResult<>), typeof(PaginatedList<>));
 
             CreateMap<Office, OfficeDto>();
+
             CreateMap<Door, DoorDto>();
+            CreateMap<UpdateDoorCommand, Door>();
+
             CreateMap<PhysicalTag, TagDto>();
             CreateMap<EventHistory, EventHistoryDto>();
             CreateMap<UserAddOrUpdateCommand, User>();

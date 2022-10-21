@@ -1,6 +1,4 @@
-﻿using ClayService.Application.Contracts.Infrastructure;
-using ClayService.Application.Contracts.Persistence;
-using ClayService.Application.Features.Office.Commands.CreateOffice;
+﻿using ClayService.Application.Contracts.Persistence;
 using ClayService.Application.Features.Office.Commands.DeleteOffice;
 using ClayService.Application.Features.Office.Commands.UpdateOffice;
 using ClayService.Application.Features.Office.Queries.GetOffice;
@@ -21,12 +19,15 @@ namespace ClayService.Infrastructure.Repositories
     public class OfficeRepository : IOfficeRepository
     {
         private readonly ClayServiceDbContext _context;
-        private readonly IDateTimeService _dateTimeService;
 
-        public OfficeRepository(ClayServiceDbContext context, IDateTimeService dateTimeService)
+        public OfficeRepository(ClayServiceDbContext context)
         {
             _context = context;
-            _dateTimeService = dateTimeService;
+        }
+
+        public async Task<Office> GetAsync(long officeId)
+        {
+            return await _context.offices.FindAsync(officeId);
         }
 
         public async Task<Office> GetAsync(GetOfficeQuery request)
@@ -53,21 +54,10 @@ namespace ClayService.Infrastructure.Repositories
             return await _context.Users.Include(u => u.Offices).AsNoTracking().Where(u => u.Id == request.UserId).SelectMany(o => o.Offices).ToListAsync();
         }
 
-        public async Task<Office> CreateAsync(CreateOfficeCommand request)
+        public async Task<Office> CreateAsync(Office office)
         {
-            if (await _context.offices.AnyAsync(o => o.Title == request.Title) == true)
-                throw new BadRequestException("Office name is duplicate");
-
-            var office = new Office()
-            {
-                Title = request.Title,
-                IsDeleted = false,
-                CreatedDate = _dateTimeService.Now
-            };
-
             await _context.offices.AddAsync(office);
             await _context.SaveChangesAsync();
-
             return office;
         }
 
@@ -92,6 +82,31 @@ namespace ClayService.Infrastructure.Repositories
 
             office.IsDeleted = true;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsUniqueTitleAsync(string title)
+        {
+            return await _context.offices.AnyAsync(o => o.Title == title) == false;
+        }
+
+        public async Task<bool> IsUniqueTitleAsync(long id, string title)
+        {
+            return await _context.offices.AnyAsync(o => o.Title == title && o.Id != id) == false;
+        }
+
+        public async Task AssignOfficeToUserAsync(long officeId, User user)
+        {
+            var office = await _context.offices.FindAsync(officeId);
+            if (office.Users.Any(u => u.Id == user.Id) == false)
+            {
+                office.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> IsOfficeAssignedToUser(long officeId, long userId)
+        {
+            return await _context.offices.AnyAsync(o => o.Id == officeId && o.Users.Any(u => u.Id == userId));
         }
     }
 }

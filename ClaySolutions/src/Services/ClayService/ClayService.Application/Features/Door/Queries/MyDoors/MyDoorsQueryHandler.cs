@@ -21,7 +21,7 @@ namespace ClayService.Application.Features.Door.Queries.MyDoors
 
         public async Task<List<DoorDto>> Handle(MyDoorsQuery request, CancellationToken cancellationToken)
         {
-            var doors = await _doorRepository.GetAsync(request);
+            var doors = await _doorRepository.GetDoorsOfUserAsync(request.UserId);
             return _mapper.Map<List<DoorDto>>(doors);
         }
     }

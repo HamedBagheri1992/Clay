@@ -1,11 +1,4 @@
-﻿using ClayService.Application.Features.Door.Commands.AssignDoor;
-using ClayService.Application.Features.Door.Commands.CreateDoor;
-using ClayService.Application.Features.Door.Commands.OperationDoor;
-using ClayService.Application.Features.Door.Commands.UpdateDoor;
-using ClayService.Application.Features.Door.Queries.GetDoor;
-using ClayService.Application.Features.Door.Queries.GetDoors;
-using ClayService.Application.Features.Door.Queries.MyDoors;
-using ClayService.Domain.Entities;
+﻿using ClayService.Domain.Entities;
 using SharedKernel.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,12 +7,14 @@ namespace ClayService.Application.Contracts.Persistence
 {
     public interface IDoorRepository
     {
-        Task AssignDoorToUserAsync(AssignDoorCommand request);
-        Task<Door> CreateAsync(CreateDoorCommand request);
-        Task<Door> GetAsync(GetDoorQuery request);
-        Task<PaginatedResult<Door>> GetAsync(GetDoorsQuery request);
-        Task<List<Door>> GetAsync(MyDoorsQuery request);
-        Task OperationAsync(OperationDoorCommand request);
-        Task UpdateAsync(UpdateDoorCommand request);
+        Task<Door> CreateAsync(Door door);
+        Task<Door> GetAsync(long id);
+        Task<PaginatedResult<Door>> GetAsync(string name, long? officeId, bool? isActive, int pageNumber, int pageSize);
+        Task<List<Door>> GetDoorsOfUserAsync(long userId);
+        Task<bool> IsUniqueNameAsync(string name, long officeId);
+        Task<bool> IsUniqueNameAsync(long id, string name, long officeId);
+        Task UpdateAsync(Door door);
+        Task AssignDoorToUserAsync(Door door, User user);
+        Task<bool> IsDoorAssignedToUser(long doorId, long userId);
     }
 }

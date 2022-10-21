@@ -10,6 +10,7 @@ namespace ClayService.Infrastructure.Persistence.Configurations
         {
             builder.Property(o => o.Title).HasMaxLength(200).IsRequired().IsUnicode();
             builder.Property(o => o.CreatedDate).IsRequired();
+            builder.HasQueryFilter(o => o.IsDeleted == false);
         }
     }
 }

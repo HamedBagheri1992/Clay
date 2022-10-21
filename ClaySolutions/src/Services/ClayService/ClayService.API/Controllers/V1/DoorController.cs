@@ -74,7 +74,7 @@ namespace ClayService.API.Controllers.V1
         {
             var currentUser = CurrentUser;
             bool isAdmin = currentUser.Roles.Contains(SystemRoleDefinition.Admin);
-            var command = new AssignDoorCommand(assignDto.UserId, assignDto.DoorIds, isAdmin, currentUser.Id);
+            var command = new AssignDoorCommand(assignDto.UserId, assignDto.DoorId, isAdmin, currentUser.Id);
             await Mediator.Send(command);
             return NoContent();
         }

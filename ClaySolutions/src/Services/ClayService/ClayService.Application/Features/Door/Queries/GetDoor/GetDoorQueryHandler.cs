@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ClayService.Application.Contracts.Persistence;
 using MediatR;
+using SharedKernel.Exceptions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +20,10 @@ namespace ClayService.Application.Features.Door.Queries.GetDoor
 
         public async Task<DoorDto> Handle(GetDoorQuery request, CancellationToken cancellationToken)
         {
-            var door = await _doorRepository.GetAsync(request);
+            var door = await _doorRepository.GetAsync(request.DoorId);
+            if (door is null)
+                throw new NotFoundException(nameof(Domain.Entities.Door), request.DoorId);
+
             return _mapper.Map<DoorDto>(door);
         }
     }

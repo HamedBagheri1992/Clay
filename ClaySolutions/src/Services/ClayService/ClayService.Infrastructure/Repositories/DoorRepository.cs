@@ -1,23 +1,9 @@
-﻿using ClayService.Application.Contracts.Infrastructure;
-using ClayService.Application.Contracts.Persistence;
-using ClayService.Application.Features.Door.Commands.AssignDoor;
-using ClayService.Application.Features.Door.Commands.CreateDoor;
-using ClayService.Application.Features.Door.Commands.OperationDoor;
-using ClayService.Application.Features.Door.Commands.UpdateDoor;
-using ClayService.Application.Features.Door.Queries.GetDoor;
-using ClayService.Application.Features.Door.Queries.GetDoors;
-using ClayService.Application.Features.Door.Queries.MyDoors;
+﻿using ClayService.Application.Contracts.Persistence;
 using ClayService.Domain.Entities;
-using ClayService.Domain.Enums;
 using ClayService.Infrastructure.Persistence;
-using EventBus.Messages.Events;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using SharedKernel.Common;
-using SharedKernel.Exceptions;
 using SharedKernel.Extensions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,205 +13,75 @@ namespace ClayService.Infrastructure.Repositories
     public class DoorRepository : IDoorRepository
     {
         private readonly ClayServiceDbContext _context;
-        private readonly IDeviceService _deviceService;
-        private readonly IDateTimeService _dateTimeService;
-        private readonly IKafkaProducer _kafkaProducer;
-        private readonly ILogger<DoorRepository> _logger;
 
-        public DoorRepository(ClayServiceDbContext context, IDeviceService deviceService, IDateTimeService dateTimeService, IKafkaProducer kafkaProducer, ILogger<DoorRepository> logger)
+        public DoorRepository(ClayServiceDbContext context)
         {
             _context = context;
-            _deviceService = deviceService;
-            _dateTimeService = dateTimeService;
-            _kafkaProducer = kafkaProducer;
-            _logger = logger;
         }
 
-        public async Task<Door> GetAsync(GetDoorQuery request)
+        public async Task<bool> IsUniqueNameAsync(string name, long officeId)
         {
-            var door = await _context.Doors.AsNoTracking().FirstOrDefaultAsync(d => d.Id == request.DoorId);
-            if (door == null)
-                throw new NotFoundException(nameof(door), request.DoorId);
-
-            return door;
+            return await _context.Doors.AnyAsync(d => d.Name == name && d.OfficeId == officeId) == false;
         }
 
-        public async Task<PaginatedResult<Door>> GetAsync(GetDoorsQuery request)
+        public async Task<bool> IsUniqueNameAsync(long id, string name, long officeId)
+        {
+            return await _context.Doors.AnyAsync(d => d.Name == name && d.OfficeId == officeId && d.Id != id) == false;
+        }
+
+        public async Task<Door> GetAsync(long id)
+        {
+            return await _context.Doors.FindAsync(id);
+        }
+
+        public async Task<PaginatedResult<Door>> GetAsync(string name, long? officeId, bool? isActive, int pageNumber, int pageSize)
         {
             var query = _context.Doors.AsNoTracking().AsQueryable();
 
-            if (string.IsNullOrEmpty(request.Name) == false)
-                query = query.Where(d => d.Name.Contains(request.Name));
+            if (string.IsNullOrEmpty(name) == false)
+                query = query.Where(d => d.Name.Contains(name));
 
-            if (request.OfficeId.HasValue == true)
-                query = query.Where(d => d.OfficeId == request.OfficeId.Value);
+            if (officeId.HasValue == true)
+                query = query.Where(d => d.OfficeId == officeId.Value);
 
 
-            if (request.IsActive.HasValue == true)
-                query = query.Where(d => d.IsActive == request.IsActive.Value);
+            if (isActive.HasValue == true)
+                query = query.Where(d => d.IsActive == isActive.Value);
             else
                 query = query.Where(d => d.IsActive == true);
 
-            return await query.ToPagedListAsync(request.PageNumber, request.PageSize);
+            query = query.OrderBy(q => q.Id);
+
+            return await query.ToPagedListAsync(pageNumber, pageSize);
         }
 
-        public async Task<List<Door>> GetAsync(MyDoorsQuery request)
+        public async Task<List<Door>> GetDoorsOfUserAsync(long userId)
         {
-            return await _context.Users.Include(u => u.Doors).AsNoTracking().Where(u => u.Id == request.UserId).SelectMany(d => d.Doors).ToListAsync();
+            return await _context.Doors.AsNoTracking().Where(d => d.Users.Any(u => u.Id == userId)).ToListAsync();
         }
 
-        public async Task<Door> CreateAsync(CreateDoorCommand request)
+        public async Task<Door> CreateAsync(Door door)
         {
-            if (await _context.Doors.AnyAsync(d => d.Name == request.Name && d.OfficeId == request.OfficeId) == true)
-                throw new BadRequestException("Door Name is duplicate in an office");
-
-            var office = await _context.offices.FindAsync(request.OfficeId);
-            if (office == null)
-                throw new NotFoundException(nameof(office), request.OfficeId);
-
-            if (office.IsDeleted == true)
-                throw new BadRequestException("Office has removed from System");
-
-            var door = new Door
-            {
-                Name = request.Name,
-                Office = office,
-                OfficeId = request.OfficeId,
-                IsActive = true,
-                CreatedDate = _dateTimeService.Now
-            };
-
             await _context.Doors.AddAsync(door);
             await _context.SaveChangesAsync();
-
             return door;
         }
 
-        public async Task UpdateAsync(UpdateDoorCommand request)
+        public async Task UpdateAsync(Door door)
         {
-            var door = await _context.Doors.FindAsync(request.Id);
-            if (door == null)
-                throw new NotFoundException(nameof(door), request.Id);
+            _context.Entry(door).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }      
 
-            if (await _context.Doors.AnyAsync(d => d.Name == request.Name && d.OfficeId == request.OfficeId && d.Id != request.Id) == true)
-                throw new BadRequestException("Door Name is duplicate in an office");
-
-            door.Name = request.Name;
-            door.OfficeId = request.OfficeId;
-            door.IsActive = request.IsActive;
-
+        public async Task AssignDoorToUserAsync(Door door, User user)
+        {
+            door.Users.Add(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task OperationAsync(OperationDoorCommand request)
+        public async Task<bool> IsDoorAssignedToUser(long doorId, long userId)
         {
-            var currentUser = await _context.Users.Include(u => u.PhysicalTag).Include(u => u.Doors).ThenInclude(d => d.Office).AsNoTracking().FirstOrDefaultAsync(u => u.Id == request.UserId);
-            if (currentUser == null)
-                throw new NotFoundException(nameof(User), request.UserId);
-
-            if (currentUser.PhysicalTagId.HasValue == false)
-                throw new BadRequestException("You do not have PhysicalTag");
-
-            if (currentUser.Doors.Count == 0)
-            {
-                _logger.LogError($"User {currentUser.UserName} does not have access to Door {request.DoorId}");
-                throw new BadRequestException("Access denied to door");
-            }
-
-            var door = currentUser.Doors.FirstOrDefault(d => d.Id == request.DoorId);
-            if (door == null)
-                throw new NotFoundException(nameof(door), request.DoorId);
-
-            if (door.Office.IsDeleted == true)
-                throw new BadRequestException("Office has removed from System");
-
-
-            //Send To Door
-
-            bool operationResult = await _deviceService.SendCommand(currentUser.PhysicalTag.TagCode);
-
-            //Log
-            var eventHistoryCheckout = new EventHistoryCheckoutEvent()
-            {
-                UserId = request.UserId,
-                TagCode = currentUser.PhysicalTag.TagCode,
-                OperationResult = operationResult,
-                OfficeId = door.OfficeId,
-                DoorId = door.Id,
-                SourceType = (byte)SourceType.Appication,
-                CreatedDate = _dateTimeService.Now
-            };
-
-            KafkaProduceMessage(eventHistoryCheckout);
-
-            if (operationResult == false)
-            {
-                _logger.LogInformation($"The Opeartion failed for Door {door.Name} by User {currentUser.UserName}");
-                throw new ApiException("The Operation failed");
-            }
+            return await _context.Doors.AnyAsync(o => o.Id == doorId && o.Users.Any(u => u.Id == userId));
         }
-
-        public async Task AssignDoorToUserAsync(AssignDoorCommand request)
-        {
-            var offices = await _context.Doors.Include(d => d.Office).Where(d => request.DoorIds.Contains(d.Id)).Select(o => o.Office).Distinct().ToListAsync();
-            if (offices.Count != 1)
-                throw new BadRequestException("DoorIds must be for a single office");
-
-            var office = offices.First();
-
-            if (request.IsAdmin == false)
-                if (_context.Users.Any(u => u.Id == request.CurrentUserId && u.Offices.Any(o => o.Id == office.Id)) == false)
-                    throw new BadRequestException("The Door is not in your Office");
-
-            var user = await _context.Users.Include(u => u.Offices).Include(u => u.Doors).FirstOrDefaultAsync(u => u.Id == request.UserId);
-            if (user == null)
-                throw new NotFoundException(nameof(User), request.UserId);
-
-            if (user.Offices.Any(o => o.Id == office.Id) == false)
-                user.Offices.Add(office);
-
-            var (deleteDoors, addDoorIds) = ConsistencyUserDoor(user.Doors, request.DoorIds);
-            if (deleteDoors.Count == 0 && addDoorIds.Count == 0)
-                return;
-
-            if (addDoorIds.Count > 0)
-            {
-                var addDoors = await _context.Doors.Where(d => addDoorIds.Contains(d.Id)).ToListAsync();
-                if (addDoorIds.Count != addDoors.Count)
-                    throw new BadRequestException("Some DoorIds are Invalid.");
-
-                user.Doors.AddRange(addDoors);
-            }
-
-            if (deleteDoors.Count > 0)
-                user.Doors.RemoveRange(deleteDoors);
-
-            await _context.SaveChangesAsync();
-        }
-
-        #region Privates
-
-        private (List<Door> deleteDoors, List<long> addDoorIds) ConsistencyUserDoor(IEnumerable<Door> doors, List<long> requestDoorIds)
-        {
-            var deleteDoors = doors.Where(dd => requestDoorIds.All(d => d != dd.Id)).ToList();
-            var addDoorIds = requestDoorIds.Where(dd => doors.All(d => d.Id != dd)).ToList();
-
-            return (deleteDoors, addDoorIds);
-        }
-
-        private void KafkaProduceMessage(EventHistoryCheckoutEvent eventHistoryCheckout)
-        {
-            try
-            {
-                string message = JsonConvert.SerializeObject(eventHistoryCheckout);
-                Task.Factory.StartNew(async () => await _kafkaProducer.WriteMessageAsync(message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "KafkaProducer has error");
-            }
-        }
-
-        #endregion
     }
 }
