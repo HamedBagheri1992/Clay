@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SharedKernel.Exceptions;
-using SharedKernel.Extensions;
 using SSO.Application.Common.Settings;
 using SSO.Application.Contracts.Infrastructure;
 using SSO.Application.Contracts.Persistence;
@@ -12,43 +10,44 @@ using SSO.Application.Features.Account.Queries.Authenticate;
 using SSO.Application.Features.Account.Queries.LogoutUser;
 using SSO.Application.Features.Account.Queries.RefreshToken;
 using SSO.Domain.Entities;
-using SSO.Infrastructure.Persistence;
-using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System;
 using System.Threading.Tasks;
+using System.Linq;
+using SharedKernel.Extensions;
 
-namespace SSO.Infrastructure.Repositories
+namespace SSO.Infrastructure.Services
 {
-    public class AccountRepository : IAccountRepository
+    public class AuthenticationService : IAuthenticationService
     {
-        protected readonly SSODbContext _context;
-        private readonly IOptionsMonitor<BearerTokensConfigurationModel> _options;
         private readonly IEncryptionService _encryptionService;
+        private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IDateTimeService _dateTimeService;
+        private readonly IOptionsMonitor<BearerTokensConfigurationModel> _options;
 
-        public AccountRepository(SSODbContext context, IOptionsMonitor<BearerTokensConfigurationModel> options, IEncryptionService encryptionService, IDateTimeService dateTimeService)
+        public AuthenticationService(IEncryptionService encryptionService, IUserRepository userRepository, IRoleRepository roleRepository,
+            IRefreshTokenRepository refreshTokenRepository, IDateTimeService dateTimeService, IOptionsMonitor<BearerTokensConfigurationModel> options)
         {
-            _context = context;
-            _options = options;
             _encryptionService = encryptionService;
+            _userRepository = userRepository;
+            _roleRepository = roleRepository;
+            _refreshTokenRepository = refreshTokenRepository;
             _dateTimeService = dateTimeService;
+            _options = options;
         }
 
         public async Task<AuthenticateDto> AuthenticateAsync(AuthenticateQuery request)
         {
             string encPass = _encryptionService.HashPassword(request.Password);
-            var user = await _context.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.UserName == request.UserName && u.Password == encPass);
+            var user = await _userRepository.GetUserWithRolesAsync(request.UserName, encPass);
             if (user == null)
                 throw new NotFoundException($"No Accounts Registered", request.UserName);
-
-            if (user.IsDeleted == true)
-                throw new BadRequestException($"Account is Deleted with {request.UserName}.");
 
             if (user.IsActive == false)
                 throw new BadRequestException($"Account is not active with {request.UserName}.");
@@ -56,41 +55,43 @@ namespace SSO.Infrastructure.Repositories
             var token = GenerateJWToken(user, _options);
             var refreshToken = GenerateRefreshToken(user, _dateTimeService, _options);
 
-            await _context.RefreshTokens.AddAsync(refreshToken);
-            await _context.SaveChangesAsync();
+            await _refreshTokenRepository.AddAsync(refreshToken);
 
             var result = new AuthenticateDto { Token = token, RefreshToken = refreshToken.Token };
             return result;
         }
 
-
         public async Task ChangePasswordAsync(ChangePasswordCommand request)
         {
             var encPass = _encryptionService.HashPassword(request.CurrentPassword);
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId && u.Password == encPass);
+            var user = await _userRepository.GetUserByPasswordAsync(request.UserId, encPass);
             if (user == null)
                 throw new NotFoundException(nameof(user), request.UserId);
 
             user.Password = _encryptionService.HashPassword(request.CurrentPassword);
-            await _context.SaveChangesAsync();
+            await _userRepository.UpdateAsync(user);
         }
 
         public async Task UpdateUserRoleAsync(UpdateUserRoleCommand request)
         {
-            var user = await _context.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var user = await _userRepository.GetUserWithRolesAsync(request.UserId);
             if (user == null)
                 throw new NotFoundException(nameof(user), request.UserId);
 
             var (deleteRoles, addRoleIds) = ConsistencyUserRole(user.Roles, request.RoleIds);
 
-            var addRoles = await _context.Roles.Where(r => addRoleIds.Contains(r.Id)).ToListAsync();
-            if (addRoleIds.Count != addRoles.Count)
-                throw new BadRequestException("Some RoleIds are Invalid.");
+            if (addRoleIds.Count > 0)
+            {
+                var addRoles = await _roleRepository.GetByRoleIdsAsync(addRoleIds);
+                if (addRoleIds.Count != addRoles.Count)
+                    throw new BadRequestException("Some RoleIds are Invalid.");
+                user.Roles.AddRange(addRoles);
+            }
 
-            user.Roles.AddRange(addRoles);
-            user.Roles.RemoveRange(deleteRoles);
+            if (deleteRoles.Count > 0)
+                user.Roles.RemoveRange(deleteRoles);
 
-            await _context.SaveChangesAsync();
+            await _userRepository.UpdateAsync(user);
         }
 
         public async Task LogoutAsync(LogoutUserQuery request)
@@ -98,15 +99,15 @@ namespace SSO.Infrastructure.Repositories
             var principal = GetPrincipalFromExpiredToken(request.AccessToken);
             var userId = principal.Identity.GetUserId<long>();
 
-            if (await _context.Users.AnyAsync(u => u.Id == userId) == false)
+            if (await _userRepository.GetAsync(request.UserId) == null)
                 throw new BadRequestException("Your token is invalid");
 
-            var lastRefreshToken = await _context.RefreshTokens.OrderByDescending(o => o.Id).FirstOrDefaultAsync(u => u.UserId == userId);
+            var lastRefreshToken = await _refreshTokenRepository.GetLatestOneAsync(userId);
             if (lastRefreshToken is null)
                 throw new BadRequestException("First login to system.");
 
             lastRefreshToken.ExpirationDate = _dateTimeService.Now;
-            await _context.SaveChangesAsync();
+            await _refreshTokenRepository.UpdateAsync(lastRefreshToken);
         }
 
         public async Task<AuthenticateDto> RefreshTokenAsync(RefreshTokenQuery request)
@@ -114,7 +115,7 @@ namespace SSO.Infrastructure.Repositories
             var principal = GetPrincipalFromExpiredToken(request.AccessToken);
             var userId = principal.Identity.GetUserId<long>();
 
-            var user = await _context.Users.Include(u => u.Roles).Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _userRepository.GetWithRoleAndRefrshTokenAsync(userId);
             if (user is null)
                 throw new BadRequestException("Your token is invalid");
 
@@ -130,8 +131,7 @@ namespace SSO.Infrastructure.Repositories
                 if ((lastRefreshToken.ExpirationDate - DateTime.Now).TotalMinutes < _options.CurrentValue.AccessTokenExpirationMinutes)
                 {
                     var refreshToken = GenerateRefreshToken(user, _dateTimeService, _options);
-                    await _context.RefreshTokens.AddAsync(refreshToken);
-                    await _context.SaveChangesAsync();
+                    await _refreshTokenRepository.AddAsync(refreshToken);
 
                     newRefreshToken = refreshToken.Token;
                 }

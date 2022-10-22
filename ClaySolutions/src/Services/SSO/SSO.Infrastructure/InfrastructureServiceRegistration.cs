@@ -29,10 +29,11 @@ namespace SSO.Infrastructure
 
             services.AddScoped<SSODbContextInitializer>();
 
-            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
 
+            services.AddTransient<IAuthenticationService, AuthenticationService>();
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddTransient<IEncryptionService, EncryptionService>();
 

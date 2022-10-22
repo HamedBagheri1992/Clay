@@ -1,9 +1,5 @@
 ﻿using MediatR;
-using SSO.Application.Contracts.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using SSO.Application.Contracts.Infrastructure;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,16 +7,16 @@ namespace SSO.Application.Features.Account.Queries.LogoutUser
 {
     public class LogoutUserQueryhandler : IRequestHandler<LogoutUserQuery>
     {
-        private readonly IAccountRepository _accountRepository;
+        private readonly IAuthenticationService _authenticationService;
 
-        public LogoutUserQueryhandler(IAccountRepository accountRepository)
+        public LogoutUserQueryhandler(IAuthenticationService authenticationService)
         {
-            _accountRepository = accountRepository;
+            _authenticationService = authenticationService;
         }
 
         public async Task<Unit> Handle(LogoutUserQuery request, CancellationToken cancellationToken)
         {
-            await _accountRepository.LogoutAsync(request);
+            await _authenticationService.LogoutAsync(request);
             return Unit.Value;
         }
     }

@@ -24,7 +24,7 @@ namespace ClayService.Application.Mappings
             CreateMap<UpdateDoorCommand, Door>();
 
             CreateMap<PhysicalTag, TagDto>();
-            CreateMap<EventHistory, EventHistoryDto>();
+            CreateMap<EventHistory, EventHistoryDto>();            
             CreateMap<UserAddOrUpdateCommand, User>();
         }
     }

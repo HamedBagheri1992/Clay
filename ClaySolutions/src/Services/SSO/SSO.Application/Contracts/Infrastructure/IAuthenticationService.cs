@@ -5,9 +5,9 @@ using SSO.Application.Features.Account.Queries.LogoutUser;
 using SSO.Application.Features.Account.Queries.RefreshToken;
 using System.Threading.Tasks;
 
-namespace SSO.Application.Contracts.Persistence
+namespace SSO.Application.Contracts.Infrastructure
 {
-    public interface IAccountRepository
+    public interface IAuthenticationService
     {
         Task<AuthenticateDto> AuthenticateAsync(AuthenticateQuery request);
         Task ChangePasswordAsync(ChangePasswordCommand request);

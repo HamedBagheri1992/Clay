@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SharedKernel.Exceptions;
 using SSO.Application.Contracts.Persistence;
-using SSO.Application.Features.Role.Queries.GetRole;
-using SSO.Application.Features.Role.Queries.GetRoles;
 using SSO.Domain.Entities;
 using SSO.Infrastructure.Persistence;
 using System.Collections.Generic;
@@ -20,22 +17,24 @@ namespace SSO.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Role> GetAsync(GetRoleQuery request)
+        public async Task<Role> GetAsync(long id)
         {
-            var role = await _context.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Id == request.Id);
-            if (role == null)
-                throw new NotFoundException(nameof(role), request.Id);
-
-            return role;
+            return await _context.Roles.FindAsync(id);
         }
 
-        public async Task<List<Role>> GetAsync(GetRolesQuery request)
+        public async Task<List<Role>> GetAsync(string title)
         {
             var roles = _context.Roles.AsNoTracking().AsQueryable();
-            if (string.IsNullOrEmpty(request.Title) == false)
-                roles = roles.Where(r => r.Title.Contains(request.Title));
+            if (string.IsNullOrEmpty(title) == false)
+                roles = roles.Where(r => r.Title.Contains(title));
 
+            roles = roles.OrderBy(r => r.Id);
             return await roles.ToListAsync();
+        }
+
+        public async Task<List<Role>> GetByRoleIdsAsync(List<long> roleIds)
+        {
+            return await _context.Roles.Where(r => roleIds.Contains(r.Id)).ToListAsync();
         }
     }
 }

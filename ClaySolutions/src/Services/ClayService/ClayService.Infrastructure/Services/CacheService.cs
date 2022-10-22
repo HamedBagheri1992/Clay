@@ -1,7 +1,9 @@
 ﻿using ClayService.Application.Common.Settings;
 using ClayService.Application.Contracts.Infrastructure;
 using ClayService.Application.Contracts.Persistence;
+using ClayService.Infrastructure.Persistence;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SharedKernel.Common;
@@ -19,10 +21,10 @@ namespace ClayService.Infrastructure.Services
         private readonly IOptionsMonitor<CacheSettingsConfigurationModel> _options;
         private readonly ILogger<CacheService> _logger;
 
-        public CacheService(IUserRepository userRepository, ITagRepository tagRepository, IDistributedCache redisCache, IOptionsMonitor<CacheSettingsConfigurationModel> options, ILogger<CacheService> logger)
+        public CacheService(IServiceProvider provider, IDistributedCache redisCache, IOptionsMonitor<CacheSettingsConfigurationModel> options, ILogger<CacheService> logger)
         {
-            _userRepository = userRepository;
-            _tagRepository = tagRepository;
+            _userRepository = provider.CreateScope().ServiceProvider.GetRequiredService<IUserRepository>();
+            _tagRepository = provider.CreateScope().ServiceProvider.GetRequiredService<ITagRepository>();
             _redisCache = redisCache;
             _options = options;
             _logger = logger;

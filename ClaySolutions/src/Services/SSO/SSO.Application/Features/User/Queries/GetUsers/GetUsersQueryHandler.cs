@@ -21,7 +21,7 @@ namespace SSO.Application.Features.User.Queries.GetUsers
 
         public async Task<PaginatedList<UserDto>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
         {
-            var pagedusers = await _userRepository.GetAsync(request);
+            var pagedusers = await _userRepository.GetAsync(request.UserName, request.FirstName, request.LastName, request.IsActive, request.PageNumber, request.PageSize);
             return _mapper.Map<PaginatedList<UserDto>>(pagedusers);
         }
     }

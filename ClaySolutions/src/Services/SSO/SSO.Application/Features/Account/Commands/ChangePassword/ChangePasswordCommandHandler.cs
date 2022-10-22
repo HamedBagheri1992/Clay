@@ -1,9 +1,5 @@
 ﻿using MediatR;
-using SSO.Application.Contracts.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using SSO.Application.Contracts.Infrastructure;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,16 +7,16 @@ namespace SSO.Application.Features.Account.Commands.ChangePassword
 {
     public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand>
     {
-        private readonly IAccountRepository _accountRepository;
+        private readonly IAuthenticationService _authenticationService;
 
-        public ChangePasswordCommandHandler(IAccountRepository accountRepository)
+        public ChangePasswordCommandHandler(IAuthenticationService authenticationService)
         {
-            _accountRepository = accountRepository;
+            _authenticationService = authenticationService;
         }
 
         public async Task<Unit> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
         {
-            await _accountRepository.ChangePasswordAsync(request);
+            await _authenticationService.ChangePasswordAsync(request);
             return Unit.Value;
         }
     }

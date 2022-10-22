@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
+using SharedKernel.Exceptions;
 using SSO.Application.Contracts.Persistence;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,10 @@ namespace SSO.Application.Features.User.Queries.GetUser
 
         public async Task<UserDto> Handle(GetUserQuery request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetAsync(request);
+            var user = await _userRepository.GetAsync(request.Id);
+            if (user == null)
+                throw new NotFoundException(nameof(Domain.Entities.User), request.Id);
+
             return _mapper.Map<UserDto>(user);
         }
     }

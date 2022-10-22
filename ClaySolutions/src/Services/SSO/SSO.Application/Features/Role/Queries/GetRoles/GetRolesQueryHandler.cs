@@ -21,7 +21,7 @@ namespace SSO.Application.Features.Role.Queries.GetRoles
 
         public async Task<List<RoleDto>> Handle(GetRolesQuery request, CancellationToken cancellationToken)
         {
-            var roles = await _roleRepository.GetAsync(request);
+            var roles = await _roleRepository.GetAsync(request.Title);
             return _mapper.Map<List<RoleDto>>(roles);
         }
     }

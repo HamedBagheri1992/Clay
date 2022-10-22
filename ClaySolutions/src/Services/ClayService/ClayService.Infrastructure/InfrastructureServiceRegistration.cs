@@ -46,7 +46,7 @@ namespace ClayService.Infrastructure
             services.AddSingleton<ICacheService, CacheService>();
 
             //Filling Redis
-            services.AddHostedService<CacheServiceInitializer>();
+            //services.AddHostedService<CacheServiceInitializer>();
 
             ConfigureAuthentication(services, configuration);
             ConfigureSwaggerGen(services);

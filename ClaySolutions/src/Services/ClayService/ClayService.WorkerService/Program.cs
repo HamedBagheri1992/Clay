@@ -28,6 +28,8 @@ builder.Services.AddHostedService<Worker>();
 builder.Services.AddSingleton<IKafkaConsumer, KafkaConsumer>();
 builder.Services.AddSingleton<IEventHistoryRepository, EventHistoryRepository>();
 builder.Services.AddSingleton<ICacheService, CacheService>();
+builder.Services.AddSingleton<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<ITagRepository, TagRepository>();
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 

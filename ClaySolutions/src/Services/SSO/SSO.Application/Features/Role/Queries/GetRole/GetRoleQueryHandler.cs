@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
+using SharedKernel.Exceptions;
 using SSO.Application.Contracts.Persistence;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,10 @@ namespace SSO.Application.Features.Role.Queries.GetRole
 
         public async Task<RoleDto> Handle(GetRoleQuery request, CancellationToken cancellationToken)
         {
-            var role = await _roleRepository.GetAsync(request);
+            var role = await _roleRepository.GetAsync(request.Id);
+            if (role == null)
+                throw new NotFoundException(nameof(Domain.Entities.User), request.Id);
+
             return _mapper.Map<RoleDto>(role);
         }
     }
