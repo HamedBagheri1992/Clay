@@ -20,7 +20,7 @@ namespace ClayService.Application.Features.EventHistory.Queries.GetEventHistorie
 
         public async Task<PaginatedList<EventHistoryDto>> Handle(GetEventHistoriesQuery request, CancellationToken cancellationToken)
         {
-            var events = await _eventHistoryRepository.GetAsync(request);
+            var events = await _eventHistoryRepository.GetAsync(request.StartCreatedDate, request.EndCreatedDate, request.UserId, request.DoorId, request.PageNumber, request.PageSize);
             return _mapper.Map<PaginatedList<EventHistoryDto>>(events);
         }
     }

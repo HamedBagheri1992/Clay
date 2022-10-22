@@ -1,16 +1,8 @@
-﻿using ClayService.Application.Contracts.Infrastructure;
-using ClayService.Application.Contracts.Persistence;
-using ClayService.Application.Features.Tag.Commands.AssignTag;
-using ClayService.Application.Features.Tag.Commands.CreateTag;
-using ClayService.Application.Features.Tag.Queries.GetTag;
-using ClayService.Application.Features.Tag.Queries.GetTags;
-using ClayService.Application.Features.Tag.Queries.MyTag;
+﻿using ClayService.Application.Contracts.Persistence;
 using ClayService.Domain.Entities;
 using ClayService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using SharedKernel.Common;
-using SharedKernel.Exceptions;
 using SharedKernel.Extensions;
 using System;
 using System.Linq;
@@ -21,103 +13,53 @@ namespace ClayService.Infrastructure.Repositories
     public class TagRepository : ITagRepository
     {
         private readonly ClayServiceDbContext _context;
-        private readonly IDateTimeService _dateTimeService;
-        private readonly ICacheService _cacheService;
 
-        public TagRepository(ClayServiceDbContext context, IDateTimeService dateTimeService, ICacheService cacheService)
+        public TagRepository(ClayServiceDbContext context)
         {
             _context = context;
-            _dateTimeService = dateTimeService;
-            _cacheService = cacheService;
         }
 
-        public async Task<PhysicalTag> GetAsync(GetTagQuery request)
+        public async Task<PhysicalTag> GetAsync(long id)
         {
-            var tag = await _context.PhysicalTags.AsNoTracking().FirstOrDefaultAsync(p => p.Id == request.Id);
-            if (tag == null)
-                throw new NotFoundException(nameof(tag), request.Id);
-
-            return tag;
+            return await _context.PhysicalTags.FindAsync(id);
         }
 
-        public async Task<PaginatedResult<PhysicalTag>> GetAsync(GetTagsQuery request)
+        public PhysicalTag GetWithUser(string tagCode)
+        {
+            return _context.PhysicalTags.Include(p => p.User).AsNoTracking().FirstOrDefault(p => p.TagCode == tagCode);
+        }
+
+        public async Task<PaginatedResult<PhysicalTag>> GetAsync(DateTime? startCreatedDate, DateTime? endCreatedDate, string tagCode, int pageNumber, int pageSize)
         {
             var query = _context.PhysicalTags.AsNoTracking().AsQueryable();
 
-            if (string.IsNullOrEmpty(request.TagCode) == false)
-                query = query.Where(t => t.TagCode.Contains(request.TagCode));
+            if (string.IsNullOrEmpty(tagCode) == false)
+                query = query.Where(t => t.TagCode.Contains(tagCode));
 
-            if (request.StartCreatedDate.HasValue)
-                query = query.Where(t => t.CreatedDate >= request.StartCreatedDate.Value);
+            if (startCreatedDate.HasValue)
+                query = query.Where(t => t.CreatedDate >= startCreatedDate.Value);
 
-            if (request.EndCreatedDate.HasValue)
-                query = query.Where(t => t.CreatedDate <= request.EndCreatedDate.Value);
+            if (endCreatedDate.HasValue)
+                query = query.Where(t => t.CreatedDate <= endCreatedDate.Value);
 
-            return await query.ToPagedListAsync(request.PageNumber, request.PageSize);
+            return await query.ToPagedListAsync(pageNumber, pageSize);
         }
 
-        public async Task<PhysicalTag> GetAsync(MyTagQuery request)
+        public async Task<PhysicalTag> GetTagsOfUserAsync(long userId)
         {
-            var currentUser = await _context.Users.Include(u => u.PhysicalTag).AsNoTracking().FirstOrDefaultAsync(u => u.Id == request.UserId);
-            if (currentUser == null)
-                throw new NotFoundException(nameof(currentUser), request.UserId);
-
-            if (currentUser.PhysicalTag == null)
-                throw new NotFoundException(nameof(PhysicalTag), request.UserId);
-
-            return currentUser.PhysicalTag;
+            return await _context.PhysicalTags.Include(p => p.User).AsNoTracking().FirstOrDefaultAsync(p => p.User.Id == userId);
         }
 
-        public async Task<PhysicalTag> CreateAsync(CreateTagCommand request)
+        public async Task<PhysicalTag> CreateAsync(PhysicalTag tag)
         {
-            if (await _context.PhysicalTags.AnyAsync(t => t.TagCode == request.TagCode) == true)
-                throw new BadRequestException("TagCode is duplicate");
-
-            var tag = new PhysicalTag { TagCode = request.TagCode, CreatedDate = _dateTimeService.Now };
             await _context.PhysicalTags.AddAsync(tag);
             await _context.SaveChangesAsync();
-
             return tag;
         }
 
-        public async Task AssignTagToUserAsync(AssignTagCommand request)
+        public async Task<bool> IsUniqueTagCodeAsync(string tagCode)
         {
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
-            {
-                try
-                {
-                    var user = await _context.Users.FindAsync(request.UserId);
-                    if (user == null)
-                        throw new BadRequestException("UserId is Invalid");
-
-                    var tag = await _context.PhysicalTags.FindAsync(request.UserId);
-                    if (tag == null)
-                        throw new BadRequestException("UserId is Invalid");
-
-                    if (request.RemoveRequest == true)
-                        user.PhysicalTagId = null;
-                    else
-                        user.PhysicalTagId = tag.Id;
-
-                    await _context.SaveChangesAsync();
-
-                    if (request.RemoveRequest == true)
-                        _cacheService.DeleteTag(tag.TagCode);
-                    else
-                    {
-                        var result = _cacheService.AddOrUpdateTag(tag.TagCode, user.Id);
-                        if (result == false)
-                            throw new ApiException("Error on Cache server...");
-                    }
-
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    throw new ApiException(ex.Message);
-                }
-            }
+            return await _context.PhysicalTags.AnyAsync(o => o.TagCode == tagCode) == false;
         }
     }
 }

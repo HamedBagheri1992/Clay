@@ -1,14 +1,8 @@
 ﻿using ClayService.Application.Contracts.Persistence;
-using ClayService.Application.Features.Office.Commands.DeleteOffice;
-using ClayService.Application.Features.Office.Commands.UpdateOffice;
-using ClayService.Application.Features.Office.Queries.GetOffice;
-using ClayService.Application.Features.Office.Queries.GetOffices;
-using ClayService.Application.Features.Office.Queries.MyOffices;
 using ClayService.Domain.Entities;
 using ClayService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.Common;
-using SharedKernel.Exceptions;
 using SharedKernel.Extensions;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,28 +24,20 @@ namespace ClayService.Infrastructure.Repositories
             return await _context.offices.FindAsync(officeId);
         }
 
-        public async Task<Office> GetAsync(GetOfficeQuery request)
-        {
-            var office = await _context.offices.AsNoTracking().FirstOrDefaultAsync(d => d.Id == request.Id);
-            if (office == null)
-                throw new NotFoundException(nameof(office), request.Id);
-
-            return office;
-        }
-
-        public async Task<PaginatedResult<Office>> GetAsync(GetOfficesQuery request)
+        public async Task<PaginatedResult<Office>> GetAsync(string title, int pageNumber, int pageSize)
         {
             var query = _context.offices.AsNoTracking().AsQueryable();
 
-            if (string.IsNullOrEmpty(request.Title) == false)
-                query = query.Where(d => d.Title.Contains(request.Title));
+            if (string.IsNullOrEmpty(title) == false)
+                query = query.Where(d => d.Title.Contains(title));
 
-            return await query.ToPagedListAsync(request.PageNumber, request.PageSize);
+            query = query.OrderBy(q => q.Id);
+            return await query.ToPagedListAsync(pageNumber, pageSize);
         }
 
-        public async Task<List<Office>> GetAsync(MyOfficesQuery request)
+        public async Task<List<Office>> GetOfficesOfUserAsync(long userId)
         {
-            return await _context.Users.Include(u => u.Offices).AsNoTracking().Where(u => u.Id == request.UserId).SelectMany(o => o.Offices).ToListAsync();
+            return await _context.offices.AsNoTracking().Where(d => d.Users.Any(u => u.Id == userId)).ToListAsync();
         }
 
         public async Task<Office> CreateAsync(Office office)
@@ -61,26 +47,16 @@ namespace ClayService.Infrastructure.Repositories
             return office;
         }
 
-        public async Task UpdateAsync(UpdateOfficeCommand request)
+        public async Task UpdateAsync(Office office)
         {
-            var office = await _context.offices.FindAsync(request.Id);
-            if (office == null)
-                throw new NotFoundException(nameof(office), request.Id);
-
-            if (await _context.offices.AnyAsync(o => o.Title == request.Title && o.Id != request.Id) == true)
-                throw new BadRequestException("Office name is duplicate");
-
-            office.Title = request.Title;
+            _context.Entry(office).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(DeleteOfficeCommand request)
+        public async Task DeleteAsync(Office office)
         {
-            var office = await _context.offices.FindAsync(request.Id);
-            if (office == null)
-                throw new NotFoundException(nameof(office), request.Id);
-
             office.IsDeleted = true;
+            _context.Entry(office).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 

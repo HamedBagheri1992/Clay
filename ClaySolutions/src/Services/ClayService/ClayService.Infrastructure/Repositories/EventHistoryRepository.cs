@@ -1,12 +1,8 @@
-﻿using AutoMapper;
-using ClayService.Application.Contracts.Infrastructure;
-using ClayService.Application.Contracts.Persistence;
+﻿using ClayService.Application.Contracts.Persistence;
 using ClayService.Application.Features.EventHistory.Queries.GetEventHistories;
 using ClayService.Domain.Entities;
-using ClayService.Domain.Enums;
 using ClayService.Infrastructure.Persistence;
 using EFCore.BulkExtensions;
-using EventBus.Messages.Events;
 using Microsoft.Extensions.Logging;
 using SharedKernel.Common;
 using SharedKernel.Extensions;
@@ -19,36 +15,19 @@ namespace ClayService.Infrastructure.Repositories
 {
     public class EventHistoryRepository : IEventHistoryRepository
     {
-        private readonly IMapper _mapper;
         private readonly ClayServiceDbContext _context;
-        private readonly ILogger<EventHistoryRepository> _logger;
-        private readonly ICacheService _cacheService;
 
-        public EventHistoryRepository(IMapper mapper, ClayServiceDbContext context, ILogger<EventHistoryRepository> logger, ICacheService cacheService)
+        public EventHistoryRepository(ClayServiceDbContext context)
         {
-            _mapper = mapper;
             _context = context;
-            _logger = logger;
-            _cacheService = cacheService;
         }
 
-        public async Task<bool> BulkInsert(List<EventHistoryCheckoutEvent> eventHistories)
+        public async Task BulkInsert(List<EventHistory> eventHistories)
         {
-            try
-            {
-                List<EventHistory> histories = MapHistories(eventHistories, _cacheService);
-                await _context.BulkInsertAsync(histories);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error on Bulk Insert");
-                return false;
-            }
-
+            await _context.BulkInsertAsync(eventHistories);
         }
 
-        public async Task<PaginatedResult<EventHistoryDto>> GetAsync(GetEventHistoriesQuery request)
+        public async Task<PaginatedResult<EventHistoryDto>> GetAsync(DateTime startCreatedDate, DateTime endCreatedDate, long? userId, long? doorId, int pageNumber, int pageSize)
         {
             var query = from EH in _context.Set<EventHistory>()
                         from D in _context.Set<Door>().Where(D => D.Id == EH.DoorId)
@@ -70,34 +49,15 @@ namespace ClayService.Infrastructure.Repositories
                             UserName = U.UserName
                         };
 
-            query = query.Where(q => q.CreatedDate >= request.StartCreatedDate && q.CreatedDate <= request.EndCreatedDate);
+            query = query.Where(q => q.CreatedDate >= startCreatedDate && q.CreatedDate <= endCreatedDate);
 
-            if (request.UserId.HasValue == true)
-                query = query.Where(e => e.UserId == request.UserId.Value);
+            if (userId.HasValue == true)
+                query = query.Where(e => e.UserId == userId.Value);
 
-            if (request.DoorId.HasValue == true)
-                query = query.Where(e => e.DoorId == request.DoorId.Value);
+            if (doorId.HasValue == true)
+                query = query.Where(e => e.DoorId == doorId.Value);
 
-            return await query.ToPagedListAsync(request.PageNumber, request.PageSize);
+            return await query.ToPagedListAsync(pageNumber, pageSize);
         }
-
-
-        #region Privates 
-
-        private static List<EventHistory> MapHistories(List<EventHistoryCheckoutEvent> eventHistories, ICacheService cacheService)
-        {
-            return eventHistories.Select(item => new EventHistory
-            {
-                UserId = item.UserId.HasValue == true ? item.UserId.Value : cacheService.GetUserId(item.TagCode),
-                TagCode = item.TagCode,
-                SourceType = (SourceType)item.SourceType,
-                OfficeId = item.OfficeId,
-                DoorId = item.DoorId,
-                OperationResult = item.OperationResult,
-                CreatedDate = item.CreatedDate
-            }).ToList();
-        }
-
-        #endregion
     }
 }

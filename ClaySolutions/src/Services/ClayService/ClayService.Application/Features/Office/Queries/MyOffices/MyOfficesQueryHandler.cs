@@ -21,7 +21,7 @@ namespace ClayService.Application.Features.Office.Queries.MyOffices
 
         public async Task<List<OfficeDto>> Handle(MyOfficesQuery request, CancellationToken cancellationToken)
         {
-            var offices = await _officeRepository.GetAsync(request);
+            var offices = await _officeRepository.GetAsync(request.UserId);
             return _mapper.Map<List<OfficeDto>>(offices);
         }
     }

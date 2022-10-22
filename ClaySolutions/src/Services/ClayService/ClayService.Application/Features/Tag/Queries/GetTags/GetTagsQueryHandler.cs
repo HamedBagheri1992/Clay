@@ -21,7 +21,7 @@ namespace ClayService.Application.Features.Tag.Queries.GetTags
 
         public async Task<PaginatedList<TagDto>> Handle(GetTagsQuery request, CancellationToken cancellationToken)
         {
-            var tags = await _tagRepository.GetAsync(request);
+            var tags = await _tagRepository.GetAsync(request.StartCreatedDate, request.EndCreatedDate, request.TagCode, request.PageNumber, request.PageSize);
             return _mapper.Map<PaginatedList<TagDto>>(tags);
         }
     }

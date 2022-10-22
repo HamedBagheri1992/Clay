@@ -2,6 +2,7 @@
 using ClayService.Application.Contracts.Persistence;
 using ClayService.Application.Features.Tag.Queries.GetTag;
 using MediatR;
+using SharedKernel.Exceptions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +21,10 @@ namespace ClayService.Application.Features.Tag.Queries.MyTag
 
         public async Task<TagDto> Handle(MyTagQuery request, CancellationToken cancellationToken)
         {
-            var tag = await _tagRepository.GetAsync(request);
+            var tag = await _tagRepository.GetTagsOfUserAsync(request.UserId);
+            if (tag == null)
+                throw new BadRequestException($"User does not have PhysicalTag, {request.UserId}");
+
             return _mapper.Map<TagDto>(tag);
         }
     }

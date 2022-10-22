@@ -19,16 +19,6 @@ namespace ClayService.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<bool> IsUniqueNameAsync(string name, long officeId)
-        {
-            return await _context.Doors.AnyAsync(d => d.Name == name && d.OfficeId == officeId) == false;
-        }
-
-        public async Task<bool> IsUniqueNameAsync(long id, string name, long officeId)
-        {
-            return await _context.Doors.AnyAsync(d => d.Name == name && d.OfficeId == officeId && d.Id != id) == false;
-        }
-
         public async Task<Door> GetAsync(long id)
         {
             return await _context.Doors.FindAsync(id);
@@ -71,12 +61,22 @@ namespace ClayService.Infrastructure.Repositories
         {
             _context.Entry(door).State = EntityState.Modified;
             await _context.SaveChangesAsync();
-        }      
+        }
 
         public async Task AssignDoorToUserAsync(Door door, User user)
         {
             door.Users.Add(user);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsUniqueNameAsync(string name, long officeId)
+        {
+            return await _context.Doors.AnyAsync(d => d.Name == name && d.OfficeId == officeId) == false;
+        }
+
+        public async Task<bool> IsUniqueNameAsync(long id, string name, long officeId)
+        {
+            return await _context.Doors.AnyAsync(d => d.Name == name && d.OfficeId == officeId && d.Id != id) == false;
         }
 
         public async Task<bool> IsDoorAssignedToUser(long doorId, long userId)

@@ -1,20 +1,17 @@
-﻿using ClayService.Application.Features.Tag.Commands.AssignTag;
-using ClayService.Application.Features.Tag.Commands.CreateTag;
-using ClayService.Application.Features.Tag.Queries.GetTag;
-using ClayService.Application.Features.Tag.Queries.GetTags;
-using ClayService.Application.Features.Tag.Queries.MyTag;
-using ClayService.Domain.Entities;
+﻿using ClayService.Domain.Entities;
 using SharedKernel.Common;
+using System;
 using System.Threading.Tasks;
 
 namespace ClayService.Application.Contracts.Persistence
 {
     public interface ITagRepository
     {
-        Task AssignTagToUserAsync(AssignTagCommand request);
-        Task<PhysicalTag> CreateAsync(CreateTagCommand request);
-        Task<PhysicalTag> GetAsync(GetTagQuery request);
-        Task<PaginatedResult<PhysicalTag>> GetAsync(GetTagsQuery request);
-        Task<PhysicalTag> GetAsync(MyTagQuery request);
+        Task<PhysicalTag> CreateAsync(PhysicalTag tag);
+        Task<PhysicalTag> GetAsync(long id);
+        PhysicalTag GetWithUser(string tagCode);
+        Task<PaginatedResult<PhysicalTag>> GetAsync(DateTime? startCreatedDate, DateTime? endCreatedDate, string tagCode, int pageNumber, int pageSize);
+        Task<PhysicalTag> GetTagsOfUserAsync(long userId);
+        Task<bool> IsUniqueTagCodeAsync(string tagCode);
     }
 }

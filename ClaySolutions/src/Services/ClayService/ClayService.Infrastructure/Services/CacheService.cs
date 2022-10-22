@@ -1,9 +1,7 @@
 ﻿using ClayService.Application.Common.Settings;
 using ClayService.Application.Contracts.Infrastructure;
-using ClayService.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using ClayService.Application.Contracts.Persistence;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SharedKernel.Common;
@@ -15,14 +13,16 @@ namespace ClayService.Infrastructure.Services
 {
     public class CacheService : ICacheService
     {
-        private readonly ClayServiceDbContext _context;
+        private readonly IUserRepository _userRepository;
+        private readonly ITagRepository _tagRepository;
         private readonly IDistributedCache _redisCache;
         private readonly IOptionsMonitor<CacheSettingsConfigurationModel> _options;
         private readonly ILogger<CacheService> _logger;
 
-        public CacheService(IServiceProvider provider, IDistributedCache redisCache, IOptionsMonitor<CacheSettingsConfigurationModel> options, ILogger<CacheService> logger)
+        public CacheService(IUserRepository userRepository, ITagRepository tagRepository, IDistributedCache redisCache, IOptionsMonitor<CacheSettingsConfigurationModel> options, ILogger<CacheService> logger)
         {
-            _context = provider.CreateScope().ServiceProvider.GetRequiredService<ClayServiceDbContext>();
+            _userRepository = userRepository;
+            _tagRepository = tagRepository;
             _redisCache = redisCache;
             _options = options;
             _logger = logger;
@@ -40,10 +40,10 @@ namespace ClayService.Infrastructure.Services
                     try
                     {
                         await Task.Delay(2000);
-                        var tagData = await _context.Users.Include(u => u.PhysicalTag).AsNoTracking().Where(u => u.PhysicalTagId.HasValue == true)
-                       .Select(u => new KeyValueModel<string, long> { Key = u.PhysicalTag.TagCode, Value = u.Id }).ToListAsync();
+                        var tagData = _userRepository.GetUsersWithPhysicalTag();
+                        var data = tagData.Select(u => new KeyValueModel<string, long> { Key = u.PhysicalTag.TagCode, Value = u.Id }).ToList();
 
-                        foreach (KeyValueModel<string, long> item in tagData)
+                        foreach (KeyValueModel<string, long> item in data)
                         {
                             AddOrUpdateTag(item.Key, item.Value);
                         }
@@ -120,9 +120,9 @@ namespace ClayService.Infrastructure.Services
 
         private long? GetUserIdContext(string tagCode)
         {
-            var user = _context.Users.Include(u => u.PhysicalTag).AsNoTracking().FirstOrDefault(u => u.PhysicalTag.TagCode == tagCode);
-            if (user != null)
-                return user.Id;
+            var physicalTag = _tagRepository.GetWithUser(tagCode);
+            if (physicalTag != null && physicalTag.User != null)
+                return physicalTag.User.Id;
 
             return null;
         }

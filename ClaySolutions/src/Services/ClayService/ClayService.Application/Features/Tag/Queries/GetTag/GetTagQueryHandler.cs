@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using ClayService.Application.Contracts.Persistence;
 using MediatR;
-using System;
+using SharedKernel.Exceptions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +20,10 @@ namespace ClayService.Application.Features.Tag.Queries.GetTag
 
         public async Task<TagDto> Handle(GetTagQuery request, CancellationToken cancellationToken)
         {
-            var tag = await _tagRepository.GetAsync(request);
+            var tag = await _tagRepository.GetAsync(request.Id);
+            if (tag == null)
+                throw new NotFoundException(nameof(Domain.Entities.PhysicalTag), request.Id);
+
             return _mapper.Map<TagDto>(tag);
         }
     }

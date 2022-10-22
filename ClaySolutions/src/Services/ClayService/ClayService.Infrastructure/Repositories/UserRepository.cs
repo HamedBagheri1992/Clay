@@ -3,8 +3,8 @@ using ClayService.Domain.Entities;
 using ClayService.Infrastructure.Common;
 using ClayService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ClayService.Infrastructure.Repositories
@@ -12,28 +12,17 @@ namespace ClayService.Infrastructure.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly ClayServiceDbContext _context;
-        private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(ClayServiceDbContext context, ILogger<UserRepository> logger)
+        public UserRepository(ClayServiceDbContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
-        public async Task<bool> AddOrUpdateAsync(User user)
+        public async Task<User> AddOrUpdateAsync(User user)
         {
-            try
-            {
-                await _context.Users.AddOrUpdateAsync(user);
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("User added to ClayService Database");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error on AddOrUpdate User");
-                return false;
-            }
+            await _context.Users.AddOrUpdateAsync(user);
+            await _context.SaveChangesAsync();
+            return user;
         }
 
         public async Task<User> GetAsync(long id)
@@ -44,6 +33,17 @@ namespace ClayService.Infrastructure.Repositories
         public async Task<User> GetUserWithPhysicalTagAsync(long id)
         {
             return await _context.Users.Include(u => u.PhysicalTag).AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task AssignTagAsync(User user)
+        {
+            _context.Entry(user).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+
+        public IEnumerable<User> GetUsersWithPhysicalTag()
+        {
+            return _context.Users.Include(u => u.PhysicalTag).AsNoTracking().Where(u => u.PhysicalTagId.HasValue == true).AsEnumerable();
         }
     }
 }

@@ -21,7 +21,7 @@ namespace ClayService.Application.Features.Office.Queries.GetOffices
 
         public async Task<PaginatedList<OfficeDto>> Handle(GetOfficesQuery request, CancellationToken cancellationToken)
         {
-            var offices = await _officeRepository.GetAsync(request);
+            var offices = await _officeRepository.GetAsync(request.Title, request.PageNumber, request.PageSize);
             return _mapper.Map<PaginatedList<OfficeDto>>(offices);
         }
     }

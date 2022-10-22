@@ -1,6 +1,8 @@
 ﻿using ClayService.Application.Common.Settings;
 using ClayService.Application.Contracts.Infrastructure;
 using ClayService.Application.Contracts.Persistence;
+using ClayService.Domain.Entities;
+using ClayService.Domain.Enums;
 using Confluent.Kafka;
 using EventBus.Messages.Events;
 using Microsoft.Extensions.Logging;
@@ -25,10 +27,12 @@ namespace ClayService.Infrastructure.Services
         private readonly ConcurrentQueue<ConsumeResult<Null, string>> messagesQueue = new ConcurrentQueue<ConsumeResult<Null, string>>();
         private readonly CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _cancelToken;
+        private readonly ICacheService _cacheService;
 
-        public KafkaConsumer(IEventHistoryRepository eventHistoryRepository, IOptionsMonitor<KafkaSettingsConfigurationModel> options, ILogger<KafkaConsumer> logger)
+        public KafkaConsumer(IEventHistoryRepository eventHistoryRepository, ICacheService cacheService, IOptionsMonitor<KafkaSettingsConfigurationModel> options, ILogger<KafkaConsumer> logger)
         {
             _eventHistoryRepository = eventHistoryRepository;
+            _cacheService = cacheService;
             _options = options;
             _logger = logger;
 
@@ -125,7 +129,19 @@ namespace ClayService.Infrastructure.Services
                     if (consumeResults.Any())
                     {
                         var histories = consumeResults.Select(c => JsonConvert.DeserializeObject<EventHistoryCheckoutEvent>(c.Message.Value)).ToList();
-                        var result = await _eventHistoryRepository.BulkInsert(histories);
+                        var eventHistories = MapHistories(histories, _cacheService);
+                        bool result = false;
+                        try
+                        {
+                            await _eventHistoryRepository.BulkInsert(eventHistories);
+                            result = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error on Bulk Insert");
+                            result = false;
+                        }
+
                         if (result == true)
                         {
                             foreach (var consumeResult in consumeResults)
@@ -162,5 +178,18 @@ namespace ClayService.Infrastructure.Services
             return result;
         }
 
+        private static List<EventHistory> MapHistories(List<EventHistoryCheckoutEvent> eventHistories, ICacheService cacheService)
+        {
+            return eventHistories.Select(item => new EventHistory
+            {
+                UserId = item.UserId.HasValue == true ? item.UserId.Value : cacheService.GetUserId(item.TagCode),
+                TagCode = item.TagCode,
+                SourceType = (SourceType)item.SourceType,
+                OfficeId = item.OfficeId,
+                DoorId = item.DoorId,
+                OperationResult = item.OperationResult,
+                CreatedDate = item.CreatedDate
+            }).ToList();
+        }
     }
 }
