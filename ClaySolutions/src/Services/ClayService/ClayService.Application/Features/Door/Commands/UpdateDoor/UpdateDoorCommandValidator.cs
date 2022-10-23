@@ -1,5 +1,4 @@
 ﻿using ClayService.Application.Contracts.Persistence;
-using ClayService.Application.Features.Door.Commands.CreateDoor;
 using FluentValidation;
 using System.Threading;
 using System.Threading.Tasks;
