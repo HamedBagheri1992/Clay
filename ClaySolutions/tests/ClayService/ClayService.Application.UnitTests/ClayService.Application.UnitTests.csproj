@@ -26,6 +26,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\..\src\Services\ClayService\ClayService.Application\ClayService.Application.csproj" />
+	  <ProjectReference Include="..\..\..\src\Services\ClayService\ClayService.Domain\ClayService.Domain.csproj" />
 	</ItemGroup>
 
 </Project>
