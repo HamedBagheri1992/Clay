@@ -2,23 +2,17 @@
 using ClayService.Application.Features.Office.Commands.CreateOffice;
 using ClayService.Domain.Entities;
 using FluentAssertions;
+using NUnit.Framework;
 using SharedKernel.Exceptions;
 using System;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace ClayService.Application.IntegrationTests.Doors.Commands;
 using static Testing;
 
 public class CreateDoorTests : BaseTestFixture
 {
-    public CreateDoorTests()
-    {
-        new Testing().RunBeforeAnyTests();
-        TestSetUp().Wait();
-    }
-
-    [Fact]
+    [Test]
     public async Task ShouldRequireMinimumFields()
     {
         var command = new CreateDoorCommand();
@@ -26,7 +20,7 @@ public class CreateDoorTests : BaseTestFixture
         await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<ValidationException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldRequireUniqueName()
     {
         var office = await SendAsync(new CreateOfficeCommand
@@ -49,7 +43,7 @@ public class CreateDoorTests : BaseTestFixture
         await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<ValidationException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldRequireValidOffice()
     {
         var command = new CreateDoorCommand
@@ -61,7 +55,7 @@ public class CreateDoorTests : BaseTestFixture
         await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<ValidationException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldCreateDoor()
     {
         var office = await SendAsync(new CreateOfficeCommand

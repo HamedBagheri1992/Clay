@@ -1,30 +1,19 @@
 ﻿using ClayService.Application.Features.Door.Commands.AssignDoor;
 using ClayService.Application.Features.Door.Commands.CreateDoor;
-using ClayService.Application.Features.Door.Queries.GetDoor;
 using ClayService.Application.Features.Office.Commands.CreateOffice;
 using ClayService.Application.Features.User.Commands.UserAddOrUpdate;
 using ClayService.Domain.Entities;
 using FluentAssertions;
+using NUnit.Framework;
 using SharedKernel.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace ClayService.Application.IntegrationTests.Doors.Commands;
 using static Testing;
 
 public class AssignDoorTests : BaseTestFixture
 {
-    public AssignDoorTests()
-    {
-        new Testing().RunBeforeAnyTests();
-        TestSetUp().Wait();
-    }
-
-    [Fact]
+    [Test]
     public async Task ShouldRequireMinimumFields()
     {
         var command = new AssignDoorCommand(0, 0, true, 1);
@@ -32,7 +21,7 @@ public class AssignDoorTests : BaseTestFixture
         await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<ValidationException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldRequireValidUser()
     {
         var office = await SendAsync(new CreateOfficeCommand
@@ -51,7 +40,7 @@ public class AssignDoorTests : BaseTestFixture
         await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<NotFoundException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldRequireValidDoor()
     {
         long userId = 2;
@@ -67,7 +56,7 @@ public class AssignDoorTests : BaseTestFixture
         await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<NotFoundException>();
     }
 
-    [Fact]
+    [Test]
     public async Task ShouldRequireAccessToOffice()
     {
         long userId = 2;
@@ -94,8 +83,8 @@ public class AssignDoorTests : BaseTestFixture
         await FluentActions.Invoking(() => SendAsync(command)).Should().ThrowAsync<BadRequestException>();
     }
 
-    [Fact]
-    public async Task ShouldAssigDoorToUser()
+    [Test]
+    public async Task ShouldAssignDoorToUser()
     {
         long userId = 2;
         await SendAsync(new UserAddOrUpdateCommand
@@ -127,6 +116,5 @@ public class AssignDoorTests : BaseTestFixture
         item.Name.Should().Be(door.Name);
         item.OfficeId.Should().Be(door.OfficeId);
         item.Users.Should().HaveCount(1);
-
     }
 }

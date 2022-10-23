@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using Respawn;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace ClayService.Application.IntegrationTests;
 
+[SetUpFixture]
 public class Testing
 {
     private static WebApplicationFactory<Program> _factory = null!;
@@ -18,6 +20,7 @@ public class Testing
     private static IServiceScopeFactory _scopeFactory = null!;
     private static Checkpoint _checkpoint = null!;
 
+    [OneTimeSetUp]
     public void RunBeforeAnyTests()
     {
         _factory = new CustomWebApplicationFactory();
