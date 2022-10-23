@@ -54,8 +54,7 @@ namespace SSO.Infrastructure.Repositories
         public async Task DeleteAsync(User user)
         {
             user.IsDeleted = true;
-            _context.Entry(user).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await UpdateAsync(user);
         }
 
         public async Task<User> GetUserWithRolesAsync(string userName, string encPass)
@@ -78,7 +77,7 @@ namespace SSO.Infrastructure.Repositories
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task<User> GetWithRoleAndRefrshTokenAsync(long userId)
+        public async Task<User> GetWithRoleAndRefreshTokensAsync(long userId)
         {
             return await _context.Users.Include(u => u.Roles).Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Id == userId);
         }

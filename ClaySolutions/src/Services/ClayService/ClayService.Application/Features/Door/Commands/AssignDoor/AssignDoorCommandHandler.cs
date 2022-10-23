@@ -21,7 +21,7 @@ namespace ClayService.Application.Features.Door.Commands.AssignDoor
 
         public async Task<Unit> Handle(AssignDoorCommand request, CancellationToken cancellationToken)
         {
-            var door = await _doorRepository.GetAsync(request.DoorId);
+            var door = await _doorRepository.GetWithOfficeAsync(request.DoorId);
             if (door == null)
                 throw new NotFoundException(nameof(Domain.Entities.Door), request.DoorId);
 
@@ -33,7 +33,7 @@ namespace ClayService.Application.Features.Door.Commands.AssignDoor
                 if (await _officeRepository.IsOfficeAssignedToUser(door.OfficeId, request.CurrentUserId) == false)
                     throw new BadRequestException("office access denied");
 
-            await _officeRepository.AssignOfficeToUserAsync(door.OfficeId, user);
+            await _officeRepository.AssignOfficeToUserAsync(door.Office, user);
             await _doorRepository.AssignDoorToUserAsync(door, user);
             return Unit.Value;
         }

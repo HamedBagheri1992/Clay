@@ -16,5 +16,6 @@ namespace ClayService.Application.Contracts.Persistence
         Task UpdateAsync(Door door);
         Task AssignDoorToUserAsync(Door door, User user);
         Task<bool> IsDoorAssignedToUser(long doorId, long userId);
+        Task<Door> GetWithOfficeAsync(long id);
     }
 }

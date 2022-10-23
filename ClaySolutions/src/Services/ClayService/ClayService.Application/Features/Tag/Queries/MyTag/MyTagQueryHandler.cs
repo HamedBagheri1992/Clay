@@ -21,7 +21,7 @@ namespace ClayService.Application.Features.Tag.Queries.MyTag
 
         public async Task<TagDto> Handle(MyTagQuery request, CancellationToken cancellationToken)
         {
-            var tag = await _tagRepository.GetTagsOfUserAsync(request.UserId);
+            var tag = await _tagRepository.GetTagOfUserAsync(request.UserId);
             if (tag == null)
                 throw new BadRequestException($"User does not have PhysicalTag, {request.UserId}");
 

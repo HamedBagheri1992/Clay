@@ -16,7 +16,7 @@ namespace SSO.Application.Contracts.Persistence
         Task<User> GetUserWithRolesAsync(string userName, string encPass);
         Task<User> GetUserWithRolesAsync(long id);
         Task<User> GetUserByPasswordAsync(long userId, string encPass);
-        Task<User> GetWithRoleAndRefrshTokenAsync(long userId);
+        Task<User> GetWithRoleAndRefreshTokensAsync(long userId);
         Task<bool> IsUniqueUserNameAsync(string userName);
     }
 }

@@ -68,7 +68,7 @@ namespace SSO.Infrastructure.Services
             if (user == null)
                 throw new NotFoundException(nameof(user), request.UserId);
 
-            user.Password = _encryptionService.HashPassword(request.CurrentPassword);
+            user.Password = _encryptionService.HashPassword(request.NewPassword);
             await _userRepository.UpdateAsync(user);
         }
 
@@ -115,7 +115,7 @@ namespace SSO.Infrastructure.Services
             var principal = GetPrincipalFromExpiredToken(request.AccessToken);
             var userId = principal.Identity.GetUserId<long>();
 
-            var user = await _userRepository.GetWithRoleAndRefrshTokenAsync(userId);
+            var user = await _userRepository.GetWithRoleAndRefreshTokensAsync(userId);
             if (user is null)
                 throw new BadRequestException("Your token is invalid");
 

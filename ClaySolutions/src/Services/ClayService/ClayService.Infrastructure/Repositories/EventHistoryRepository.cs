@@ -3,7 +3,6 @@ using ClayService.Application.Features.EventHistory.Queries.GetEventHistories;
 using ClayService.Domain.Entities;
 using ClayService.Infrastructure.Persistence;
 using EFCore.BulkExtensions;
-using Microsoft.Extensions.Logging;
 using SharedKernel.Common;
 using SharedKernel.Extensions;
 using System;

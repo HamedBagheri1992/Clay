@@ -56,8 +56,7 @@ namespace ClayService.Infrastructure.Repositories
         public async Task DeleteAsync(Office office)
         {
             office.IsDeleted = true;
-            _context.Entry(office).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            await UpdateAsync(office);
         }
 
         public async Task<bool> IsUniqueTitleAsync(string title)
@@ -70,14 +69,10 @@ namespace ClayService.Infrastructure.Repositories
             return await _context.offices.AnyAsync(o => o.Title == title && o.Id != id) == false;
         }
 
-        public async Task AssignOfficeToUserAsync(long officeId, User user)
+        public async Task AssignOfficeToUserAsync(Office office, User user)
         {
-            var office = await _context.offices.FindAsync(officeId);
-            if (office.Users.Any(u => u.Id == user.Id) == false)
-            {
-                office.Users.Add(user);
-                await _context.SaveChangesAsync();
-            }
+            office.Users.Add(user);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> IsOfficeAssignedToUser(long officeId, long userId)

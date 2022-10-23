@@ -45,7 +45,7 @@ namespace ClayService.Infrastructure.Repositories
             return await query.ToPagedListAsync(pageNumber, pageSize);
         }
 
-        public async Task<PhysicalTag> GetTagsOfUserAsync(long userId)
+        public async Task<PhysicalTag> GetTagOfUserAsync(long userId)
         {
             return await _context.PhysicalTags.Include(p => p.User).AsNoTracking().FirstOrDefaultAsync(p => p.User.Id == userId);
         }

@@ -83,5 +83,10 @@ namespace ClayService.Infrastructure.Repositories
         {
             return await _context.Doors.AnyAsync(o => o.Id == doorId && o.Users.Any(u => u.Id == userId));
         }
+
+        public async Task<Door> GetWithOfficeAsync(long id)
+        {
+            return await _context.Doors.Include(d => d.Office).FirstOrDefaultAsync(d => d.Id == id);
+        }
     }
 }
