@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel.Common;
-using SSO.Application.Features.Account.Commands.ChangePassword;
-using SSO.Application.Features.Account.Commands.UpdateUserRole;
-using SSO.Application.Features.Account.Queries.Authenticate;
-using SSO.Application.Features.Account.Queries.LogoutUser;
-using SSO.Application.Features.Account.Queries.RefreshToken;
+using SSO.Application.Features.Authentication.Commands.ChangePassword;
+using SSO.Application.Features.Authentication.Commands.UpdateUserRole;
+using SSO.Application.Features.Authentication.Queries.Authenticate;
+using SSO.Application.Features.Authentication.Queries.LogoutUser;
+using SSO.Application.Features.Authentication.Queries.RefreshToken;
 using System.Threading.Tasks;
 
 namespace SSO.API.Controllers.V1
@@ -14,7 +14,7 @@ namespace SSO.API.Controllers.V1
     [Authorize]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    public class AccountController : ApiControllerBase
+    public class AuthenticationController : ApiControllerBase
     {
         [AllowAnonymous]
         [HttpPost("[action]")]

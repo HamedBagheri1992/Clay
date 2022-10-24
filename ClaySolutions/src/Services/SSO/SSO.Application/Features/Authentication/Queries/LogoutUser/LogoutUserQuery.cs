@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace SSO.Application.Features.Account.Queries.LogoutUser
+namespace SSO.Application.Features.Authentication.Queries.LogoutUser
 {
     public class LogoutUserQuery : IRequest
     {

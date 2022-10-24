@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SSO.Application.Features.Account.Commands.ChangePassword
+namespace SSO.Application.Features.Authentication.Commands.ChangePassword
 {
     public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCommand>
     {

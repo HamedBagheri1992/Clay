@@ -1,8 +1,8 @@
 {
   "Routes": [
-    //Account/Login
+    //Authentication/Login
     {
-      "DownstreamPathTemplate": "/api/v1/account/login",
+      "DownstreamPathTemplate": "/api/v1/authentication/login",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -10,12 +10,12 @@
           "Port": "80"
         }
       ],
-      "UpstreamPathTemplate": "/SSO/Account/Login",
+      "UpstreamPathTemplate": "/SSO/Authentication/Login",
       "UpstreamHttpMethod": [ "POST" ]
     },
-    //Account/ChangePassword
+    //Authentication/ChangePassword
     {
-      "DownstreamPathTemplate": "/api/v1/account/changepassword",
+      "DownstreamPathTemplate": "/api/v1/authentication/changepassword",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -23,12 +23,12 @@
           "Port": "80"
         }
       ],
-      "UpstreamPathTemplate": "/SSO/Account/ChangePassword",
+      "UpstreamPathTemplate": "/SSO/Authentication/ChangePassword",
       "UpstreamHttpMethod": [ "PUT" ]
     },
-    //Account/Logout
+    //Authentication/Logout
     {
-      "DownstreamPathTemplate": "/api/v1/account/logout",
+      "DownstreamPathTemplate": "/api/v1/authentication/logout",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -36,12 +36,12 @@
           "Port": "80"
         }
       ],
-      "UpstreamPathTemplate": "/SSO/Account/Logout",
+      "UpstreamPathTemplate": "/SSO/Authentication/Logout",
       "UpstreamHttpMethod": [ "POST" ]
     },
-    //Account/RefreshToken
+    //Authentication/RefreshToken
     {
-      "DownstreamPathTemplate": "/api/v1/account/refreshtoken",
+      "DownstreamPathTemplate": "/api/v1/authentication/refreshtoken",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -49,12 +49,12 @@
           "Port": "80"
         }
       ],
-      "UpstreamPathTemplate": "/SSO/Account/RefreshToken",
+      "UpstreamPathTemplate": "/SSO/Authentication/RefreshToken",
       "UpstreamHttpMethod": [ "POST" ]
     },
-    //UpdateUserRole
+    //Authentication/UpdateUserRole
     {
-      "DownstreamPathTemplate": "/api/v1/account/updateuserrole",
+      "DownstreamPathTemplate": "/api/v1/authentication/updateuserrole",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -62,7 +62,7 @@
           "Port": "80"
         }
       ],
-      "UpstreamPathTemplate": "/SSO/Account/UpdateUserRole",
+      "UpstreamPathTemplate": "/SSO/Authentication/UpdateUserRole",
       "UpstreamHttpMethod": [ "PUT" ]
     },
     //Role/{id}

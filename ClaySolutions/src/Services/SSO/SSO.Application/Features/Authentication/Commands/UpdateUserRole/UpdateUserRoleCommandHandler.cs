@@ -3,7 +3,7 @@ using SSO.Application.Contracts.Infrastructure;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SSO.Application.Features.Account.Commands.UpdateUserRole
+namespace SSO.Application.Features.Authentication.Commands.UpdateUserRole
 {
     public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleCommand>
     {

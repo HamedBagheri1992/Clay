@@ -4,7 +4,7 @@ using SSO.Application.Contracts.Persistence;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SSO.Application.Features.Account.Queries.Authenticate
+namespace SSO.Application.Features.Authentication.Queries.Authenticate
 {
     public class AuthenticateQueryHandler : IRequestHandler<AuthenticateQuery, AuthenticateDto>
     {

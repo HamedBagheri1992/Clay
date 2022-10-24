@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace SSO.Application.Features.Account.Queries.LogoutUser
+namespace SSO.Application.Features.Authentication.Queries.LogoutUser
 {
     internal class LogoutUserQueryValidator : AbstractValidator<LogoutUserQuery>
     {
@@ -8,7 +8,7 @@ namespace SSO.Application.Features.Account.Queries.LogoutUser
         {
             RuleFor(p => p.AccessToken)
                 .NotEmpty().WithMessage("{AccessToken} is required.")
-                .NotNull();                
+                .NotNull();
         }
     }
 }

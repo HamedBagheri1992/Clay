@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using System.Collections.Generic;
 
-namespace SSO.Application.Features.Account.Commands.UpdateUserRole
+namespace SSO.Application.Features.Authentication.Commands.UpdateUserRole
 {
     public class UpdateUserRoleCommand : IRequest
     {

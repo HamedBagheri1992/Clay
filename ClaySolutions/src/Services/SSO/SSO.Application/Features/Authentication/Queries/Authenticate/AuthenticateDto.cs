@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SSO.Application.Features.Account.Queries.Authenticate
+namespace SSO.Application.Features.Authentication.Queries.Authenticate
 {
     public class AuthenticateDto
     {

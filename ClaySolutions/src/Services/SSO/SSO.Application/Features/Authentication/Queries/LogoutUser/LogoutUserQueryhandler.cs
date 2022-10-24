@@ -3,7 +3,7 @@ using SSO.Application.Contracts.Infrastructure;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SSO.Application.Features.Account.Queries.LogoutUser
+namespace SSO.Application.Features.Authentication.Queries.LogoutUser
 {
     public class LogoutUserQueryhandler : IRequestHandler<LogoutUserQuery>
     {

@@ -3,7 +3,7 @@ using SSO.Application.Contracts.Infrastructure;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SSO.Application.Features.Account.Commands.ChangePassword
+namespace SSO.Application.Features.Authentication.Commands.ChangePassword
 {
     public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand>
     {

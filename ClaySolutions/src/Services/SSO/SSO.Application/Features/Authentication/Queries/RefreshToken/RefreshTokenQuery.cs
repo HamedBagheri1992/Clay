@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using SSO.Application.Features.Account.Queries.Authenticate;
+using SSO.Application.Features.Authentication.Queries.Authenticate;
 
-namespace SSO.Application.Features.Account.Queries.RefreshToken
+namespace SSO.Application.Features.Authentication.Queries.RefreshToken
 {
     public class RefreshTokenQuery : IRequest<AuthenticateDto>
     {

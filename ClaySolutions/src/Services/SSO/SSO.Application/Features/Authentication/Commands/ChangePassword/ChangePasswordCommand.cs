@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace SSO.Application.Features.Account.Commands.ChangePassword
+namespace SSO.Application.Features.Authentication.Commands.ChangePassword
 {
     public class ChangePasswordCommand : IRequest
     {

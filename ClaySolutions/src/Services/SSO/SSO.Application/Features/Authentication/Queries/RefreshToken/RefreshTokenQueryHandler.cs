@@ -1,10 +1,10 @@
 ﻿using MediatR;
 using SSO.Application.Contracts.Infrastructure;
-using SSO.Application.Features.Account.Queries.Authenticate;
+using SSO.Application.Features.Authentication.Queries.Authenticate;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SSO.Application.Features.Account.Queries.RefreshToken
+namespace SSO.Application.Features.Authentication.Queries.RefreshToken
 {
     public class RefreshTokenQueryHandler : IRequestHandler<RefreshTokenQuery, AuthenticateDto>
     {

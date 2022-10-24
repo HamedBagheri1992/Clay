@@ -4,11 +4,6 @@ using SharedKernel.Exceptions;
 using SSO.Application.Common.Settings;
 using SSO.Application.Contracts.Infrastructure;
 using SSO.Application.Contracts.Persistence;
-using SSO.Application.Features.Account.Commands.ChangePassword;
-using SSO.Application.Features.Account.Commands.UpdateUserRole;
-using SSO.Application.Features.Account.Queries.Authenticate;
-using SSO.Application.Features.Account.Queries.LogoutUser;
-using SSO.Application.Features.Account.Queries.RefreshToken;
 using SSO.Domain.Entities;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,6 +14,11 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using SharedKernel.Extensions;
+using SSO.Application.Features.Authentication.Queries.RefreshToken;
+using SSO.Application.Features.Authentication.Queries.LogoutUser;
+using SSO.Application.Features.Authentication.Queries.Authenticate;
+using SSO.Application.Features.Authentication.Commands.UpdateUserRole;
+using SSO.Application.Features.Authentication.Commands.ChangePassword;
 
 namespace SSO.Infrastructure.Services
 {
